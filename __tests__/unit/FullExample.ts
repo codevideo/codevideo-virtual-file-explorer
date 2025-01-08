@@ -162,4 +162,149 @@ describe("VirtualFileExplorer", () => {
       );
     });
   });
+
+  describe("getFileContents", () => {
+    it("should retrieve file contents", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" },
+        { name: "create-file", value: "src/index.ts" },
+        { name: "create-file", value: "src/app.ts" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      expect(virtualFileExplorer.getFileContents("src/index.ts")).toBe("");
+    });
+
+    it("should throw error for non-existent file", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      expect(() => {
+        virtualFileExplorer.getFileContents("nonexistent.ts");
+      }).toThrow("File not found: nonexistent.ts");
+    });
+
+    it("should throw error when path points to directory", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      expect(() => {
+        virtualFileExplorer.getFileContents("src");
+      }).toThrow("Path points to a directory, not a file: src");
+    });
+
+    it("should handle deeply nested files", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" },
+        { name: "create-folder", value: "src/components" },
+        { name: "create-folder", value: "src/components/ui" },
+        { name: "create-file", value: "src/components/ui/Button.tsx" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      expect(virtualFileExplorer.getFileContents("src/components/ui/Button.tsx")).toBe("");
+    });
+  });
+
+  describe("file open/close operations", () => {
+    it("should track opened files", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" },
+        { name: "create-file", value: "src/index.ts" },
+        { name: "create-file", value: "src/app.ts" },
+        { name: "create-file", value: "src/utils.ts" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      
+      // Open some files
+      virtualFileExplorer.openFile("src/index.ts");
+      virtualFileExplorer.openFile("src/app.ts");
+      
+      // Check open files
+      expect(virtualFileExplorer.getOpenFiles()).toEqual([
+        "src/app.ts",
+        "src/index.ts"
+      ]);
+    });
+
+    it("should handle closing files", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" },
+        { name: "create-file", value: "src/index.ts" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      
+      virtualFileExplorer.openFile("src/index.ts");
+      expect(virtualFileExplorer.getOpenFiles()).toEqual(["src/index.ts"]);
+      
+      virtualFileExplorer.closeFile("src/index.ts");
+      expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
+    });
+
+    it("should handle closing non-opened files", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" },
+        { name: "create-file", value: "src/index.ts" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      
+      virtualFileExplorer.closeFile("src/index.ts"); // Should not throw
+      expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
+    });
+
+    it("should throw when opening non-existent files", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      
+      expect(() => {
+        virtualFileExplorer.openFile("nonexistent.ts");
+      }).toThrow("File not found: nonexistent.ts");
+    });
+
+    it("should throw when opening directories", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      
+      expect(() => {
+        virtualFileExplorer.openFile("src");
+      }).toThrow("Cannot open a directory: src");
+    });
+
+    it("should maintain open files through file operations", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-folder", value: "src" },
+        { name: "create-file", value: "src/index.ts" },
+        { name: "create-file", value: "src/app.ts" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      
+      virtualFileExplorer.openFile("src/index.ts");
+      virtualFileExplorer.openFile("src/app.ts");
+
+      // Rename an open file
+      virtualFileExplorer.applyAction({
+        name: "rename-file",
+        value: "from:src/index.ts;to:src/main.ts"
+      });
+
+      expect(virtualFileExplorer.getOpenFiles()).toEqual([
+        "src/app.ts",
+        "src/main.ts"
+      ]);
+    });
+  });
 });

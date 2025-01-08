@@ -10,6 +10,7 @@ import {
 export class VirtualFileExplorer {
   private currentFileStructure: IFileStructure = {};
   private actionsApplied: FileExplorerAction[] = [];
+  private openFiles: Set<string> = new Set();
   private verbose = false;
 
   constructor(actions?: FileExplorerAction[], verbose?: boolean) {
@@ -124,6 +125,12 @@ export class VirtualFileExplorer {
         if (fromParent[fromName]) {
           toParent[toName] = fromParent[fromName];
           delete fromParent[fromName];
+
+          // Update open files if the renamed file was open
+          if (this.openFiles.has(fromPath)) {
+            this.openFiles.delete(fromPath);
+            this.openFiles.add(toPath);
+          }
         }
         break;
       }
@@ -271,5 +278,62 @@ export class VirtualFileExplorer {
 
   getActionsApplied(): FileExplorerAction[] {
     return this.actionsApplied;
+  }
+
+  /**
+   * Gets the contents of a specific file
+   * @param fileName Full path to the file
+   * @returns The content of the file if it exists
+   * @throws Error if file doesn't exist or if path points to a directory
+   */
+  getFileContents(fileName: string): string {
+    const { parent, name } = this.getParentDirectory(fileName);
+    const file = parent[name];
+
+    if (!file) {
+      throw new Error(`File not found: ${fileName}`);
+    }
+
+    if (file.type === 'directory') {
+      throw new Error(`Path points to a directory, not a file: ${fileName}`);
+    }
+
+    return file.content;
+  }
+
+  /**
+   * Opens a file in the file system
+   * @param fileName Full path to the file
+   * @throws Error if file doesn't exist or if path points to a directory
+   */
+  openFile(fileName: string): void {
+    const { parent, name } = this.getParentDirectory(fileName);
+    const file = parent[name];
+
+    if (!file) {
+      throw new Error(`File not found: ${fileName}`);
+    }
+
+    if (file.type === 'directory') {
+      throw new Error(`Cannot open a directory: ${fileName}`);
+    }
+
+    this.openFiles.add(fileName);
+  }
+
+  /**
+   * Closes a file in the file system
+   * @param fileName Full path to the file
+   */
+  closeFile(fileName: string): void {
+    this.openFiles.delete(fileName);
+  }
+
+  /**
+   * Gets the list of currently open files
+   * @returns Array of file paths that are currently open
+   */
+  getOpenFiles(): string[] {
+    return Array.from(this.openFiles).sort();
   }
 }
