@@ -14,8 +14,8 @@ describe("VirtualFileExplorer", () => {
     it("should create files in root directory", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-file", value: "file1.ts" },
-        { name: "create-file", value: "file2.ts" },
+        { name: "file-explorer-create-file", value: "file1.ts" },
+        { name: "file-explorer-create-file", value: "file2.ts" },
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -31,10 +31,10 @@ describe("VirtualFileExplorer", () => {
     it("should handle nested folder creation and toggle states", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-folder", value: "src/components" },
-        { name: "create-folder", value: "src/utils" },
-        { name: "toggle-folder", value: "src/components" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-folder", value: "src/components" },
+        { name: "file-explorer-create-folder", value: "src/utils" },
+        { name: "file-explorer-toggle-folder", value: "src/components" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -48,11 +48,11 @@ describe("VirtualFileExplorer", () => {
     it("should handle folder deletion with contents", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" },
-        { name: "create-folder", value: "src/components" },
-        { name: "create-file", value: "src/components/Button.tsx" },
-        { name: "delete-folder", value: "src/components" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-create-folder", value: "src/components" },
+        { name: "file-explorer-create-file", value: "src/components/Button.tsx" },
+        { name: "file-explorer-delete-folder", value: "src/components" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -67,12 +67,12 @@ describe("VirtualFileExplorer", () => {
     it("should handle file copy and move operations", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-folder", value: "dist" },
-        { name: "create-file", value: "src/index.ts" },
-        { name: "copy-file", value: "from:src/index.ts;to:dist/index.ts" },
-        { name: "create-folder", value: "backup" },
-        { name: "move-file", value: "from:src/index.ts;to:backup/index.ts" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-folder", value: "dist" },
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-copy-file", value: "from:src/index.ts;to:dist/index.ts" },
+        { name: "file-explorer-create-folder", value: "backup" },
+        { name: "file-explorer-move-file", value: "from:src/index.ts;to:backup/index.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -89,12 +89,12 @@ describe("VirtualFileExplorer", () => {
     it("should handle folder copy and move operations", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" },
-        { name: "create-folder", value: "src/components" },
-        { name: "create-file", value: "src/components/Button.tsx" },
-        { name: "copy-folder", value: "from:src;to:src-backup" },
-        { name: "move-folder", value: "from:src/components;to:shared/components" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-create-folder", value: "src/components" },
+        { name: "file-explorer-create-file", value: "src/components/Button.tsx" },
+        { name: "file-explorer-copy-folder", value: "from:src;to:src-backup" },
+        { name: "file-explorer-move-folder", value: "from:src/components;to:shared/components" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -111,11 +111,11 @@ describe("VirtualFileExplorer", () => {
     it("should maintain alphabetical ordering", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/zebra.ts" },
-        { name: "create-file", value: "src/alpha.ts" },
-        { name: "create-folder", value: "src/beta" },
-        { name: "create-folder", value: "src/gamma" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/zebra.ts" },
+        { name: "file-explorer-create-file", value: "src/alpha.ts" },
+        { name: "file-explorer-create-folder", value: "src/beta" },
+        { name: "file-explorer-create-folder", value: "src/gamma" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -129,11 +129,11 @@ describe("VirtualFileExplorer", () => {
     it("should handle complex rename operations", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/oldName.ts" },
-        { name: "rename-file", value: "from:src/oldName.ts;to:src/newName.ts" },
-        { name: "create-folder", value: "src/subfolder" },
-        { name: "rename-folder", value: "from:src/subfolder;to:src/betterName" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/oldName.ts" },
+        { name: "file-explorer-rename-file", value: "from:src/oldName.ts;to:src/newName.ts" },
+        { name: "file-explorer-create-folder", value: "src/subfolder" },
+        { name: "file-explorer-rename-folder", value: "from:src/subfolder;to:src/betterName" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -148,12 +148,12 @@ describe("VirtualFileExplorer", () => {
     it("should handle deeply nested structures", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "root" },
-        { name: "create-folder", value: "root/level1" },
-        { name: "create-folder", value: "root/level1/level2" },
-        { name: "create-file", value: "root/level1/level2/deep.ts" },
-        { name: "create-file", value: "root/level1/medium.ts" },
-        { name: "create-file", value: "root/shallow.ts" }
+        { name: "file-explorer-create-folder", value: "root" },
+        { name: "file-explorer-create-folder", value: "root/level1" },
+        { name: "file-explorer-create-folder", value: "root/level1/level2" },
+        { name: "file-explorer-create-file", value: "root/level1/level2/deep.ts" },
+        { name: "file-explorer-create-file", value: "root/level1/medium.ts" },
+        { name: "file-explorer-create-file", value: "root/shallow.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -167,9 +167,9 @@ describe("VirtualFileExplorer", () => {
     it("should retrieve file contents", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" },
-        { name: "create-file", value: "src/app.ts" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-create-file", value: "src/app.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -186,7 +186,7 @@ describe("VirtualFileExplorer", () => {
     it("should throw error when path points to directory", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" }
+        { name: "file-explorer-create-folder", value: "src" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -198,10 +198,10 @@ describe("VirtualFileExplorer", () => {
     it("should handle deeply nested files", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-folder", value: "src/components" },
-        { name: "create-folder", value: "src/components/ui" },
-        { name: "create-file", value: "src/components/ui/Button.tsx" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-folder", value: "src/components" },
+        { name: "file-explorer-create-folder", value: "src/components/ui" },
+        { name: "file-explorer-create-file", value: "src/components/ui/Button.tsx" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -213,21 +213,21 @@ describe("VirtualFileExplorer", () => {
     it("should track opened files", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" },
-        { name: "create-file", value: "src/app.ts" },
-        { name: "create-file", value: "src/utils.ts" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-create-file", value: "src/app.ts" },
+        { name: "file-explorer-create-file", value: "src/utils.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
       
       // Open some files
       virtualFileExplorer.applyAction({
-        name: "open-file",
+        name: "file-explorer-open-file",
         value: "src/index.ts"
       });
       virtualFileExplorer.applyAction({
-        name: "open-file",
+        name: "file-explorer-open-file",
         value: "src/app.ts"
       });
       
@@ -241,9 +241,9 @@ describe("VirtualFileExplorer", () => {
     it("should handle closing files", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" },
-        { name: "open-file", value: "src/index.ts" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-open-file", value: "src/index.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -252,20 +252,20 @@ describe("VirtualFileExplorer", () => {
       expect(virtualFileExplorer.getOpenFiles()).toEqual(["src/index.ts"]);
       
       // after closing it, expect no open files
-      virtualFileExplorer.applyAction({ name: "close-file", value: "src/index.ts" });
+      virtualFileExplorer.applyAction({ name: "file-explorer-close-file", value: "src/index.ts" });
       expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
     });
 
     it("should handle closing non-opened files", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/index.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
       
-      virtualFileExplorer.applyAction({ name: "close-file", value: "src/index.ts" });
+      virtualFileExplorer.applyAction({ name: "file-explorer-close-file", value: "src/index.ts" });
       expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
     });
 
@@ -273,45 +273,45 @@ describe("VirtualFileExplorer", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       
       expect(() => {
-        virtualFileExplorer.applyAction({ name: "open-file", value: "nonexistent.ts" });
+        virtualFileExplorer.applyAction({ name: "file-explorer-open-file", value: "nonexistent.ts" });
       }).toThrow("File not found: nonexistent.ts");
     });
 
     it("should throw when opening directories", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" }
+        { name: "file-explorer-create-folder", value: "src" }
       ];
 
       virtualFileExplorer.applyActions(actions);
       
       expect(() => {
-        virtualFileExplorer.applyAction({ name: "open-file", value: "src" });
+        virtualFileExplorer.applyAction({ name: "file-explorer-open-file", value: "src" });
       }).toThrow("Cannot open a directory: src");
     });
 
     it("should maintain open files through file operations", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" },
-        { name: "create-file", value: "src/app.ts" }
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-create-file", value: "src/app.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
       
       virtualFileExplorer.applyAction({
-        name: "open-file",
+        name: "file-explorer-open-file",
         value: "src/index.ts"
       });
       virtualFileExplorer.applyAction({
-        name: "open-file",
+        name: "file-explorer-open-file",
         value: "src/app.ts"
       });
 
       // Rename an open file
       virtualFileExplorer.applyAction({
-        name: "rename-file",
+        name: "file-explorer-rename-file",
         value: "from:src/index.ts;to:src/main.ts"
       });
 
@@ -326,12 +326,12 @@ describe("VirtualFileExplorer", () => {
     it("should reflect the open files sorted in alphabetical order, once they are opened, and also once one is closed", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
-        { name: "create-file", value: "src/index.ts" },
-        { name: "open-file", value: "src/index.ts" },
-        { name: "create-file", value: "src/app.ts" },
-        { name: "open-file", value: "src/app.ts" },
-        { name: "create-file", value: "src/utils.ts" },
-        { name: "open-file", value: "src/utils.ts" }
+        { name: "file-explorer-create-file", value: "src/index.ts" },
+        { name: "file-explorer-open-file", value: "src/index.ts" },
+        { name: "file-explorer-create-file", value: "src/app.ts" },
+        { name: "file-explorer-open-file", value: "src/app.ts" },
+        { name: "file-explorer-create-file", value: "src/utils.ts" },
+        { name: "file-explorer-open-file", value: "src/utils.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -342,7 +342,7 @@ describe("VirtualFileExplorer", () => {
       ]);
 
       // close one of the files
-      virtualFileExplorer.applyAction({ name: "close-file", value: "src/app.ts" });
+      virtualFileExplorer.applyAction({ name: "file-explorer-close-file", value: "src/app.ts" });
       expect(virtualFileExplorer.getOpenFiles()).toEqual([
         "src/index.ts",
         "src/utils.ts"

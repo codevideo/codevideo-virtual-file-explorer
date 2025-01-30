@@ -34,23 +34,23 @@ export class VirtualFileExplorer {
 
     // in this switch, let the FileExplorerActions in codevideo-types guide you
     switch (action.name) {
-      case "create-file": {
+      case "file-explorer-create-file": {
         const { parent, name } = this.getParentDirectory(action.value);
         parent[name] = this.createFileItem(name);
         break;
       }
 
-      case "open-file": {
+      case "file-explorer-open-file": {
         this.openFile(action.value);
         break;
       }
 
-      case "close-file": {
+      case "file-explorer-close-file": {
         this.closeFile(action.value);
         break;
       }
 
-      case "rename-file": {
+      case "file-explorer-rename-file": {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
@@ -70,7 +70,7 @@ export class VirtualFileExplorer {
         break;
       }
 
-      case "move-file": {
+      case "file-explorer-move-file": {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
@@ -84,7 +84,7 @@ export class VirtualFileExplorer {
         break;
       }
 
-      case "copy-file": {
+      case "file-explorer-copy-file": {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
@@ -97,19 +97,19 @@ export class VirtualFileExplorer {
         break;
       }
 
-      case "delete-file": {
+      case "file-explorer-delete-file": {
         const { parent, name } = this.getParentDirectory(action.value);
         delete parent[name];
         break;
       }
 
-      case "create-folder": {
+      case "file-explorer-create-folder": {
         const { parent, name } = this.getParentDirectory(action.value);
         parent[name] = this.createDirectoryItem();
         break;
       }
 
-      case "rename-folder": {
+      case "file-explorer-rename-folder": {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
@@ -123,7 +123,7 @@ export class VirtualFileExplorer {
         break;
       }
 
-      case "move-folder": {
+      case "file-explorer-move-folder": {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
@@ -137,7 +137,7 @@ export class VirtualFileExplorer {
         break;
       }
 
-      case "copy-folder": {
+      case "file-explorer-copy-folder": {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
@@ -150,13 +150,13 @@ export class VirtualFileExplorer {
         break;
       }
 
-      case "delete-folder": {
+      case "file-explorer-delete-folder": {
         const { parent, name } = this.getParentDirectory(action.value);
         delete parent[name];
         break;
       }
 
-      case "toggle-folder": {
+      case "file-explorer-toggle-folder": {
         const { parent, name } = this.getParentDirectory(action.value);
         if (parent[name] && parent[name].type === 'directory') {
           const dir = parent[name] as DirectoryNode;
@@ -165,7 +165,7 @@ export class VirtualFileExplorer {
         break;
       }
 
-      case "open-file": {
+      case "file-explorer-open-file": {
         // This is a no-op in the file structure, as it's handled by the UI
         break;
       }
@@ -196,6 +196,7 @@ export class VirtualFileExplorer {
    * @returns The content of the file if it exists
    * @throws Error if file doesn't exist or if path points to a directory
    */
+  // TODO this is handled by the virtual editor... maybe its good to have it here too? or... we have files point to @fullstackcraftllc/codevideo-virtual-editor(s) here
   getFileContents(fileName: string): string {
     const { parent, name } = this.getParentDirectory(fileName);
     const file = parent[name];
