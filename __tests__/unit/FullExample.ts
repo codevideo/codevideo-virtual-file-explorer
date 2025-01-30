@@ -222,8 +222,14 @@ describe("VirtualFileExplorer", () => {
       virtualFileExplorer.applyActions(actions);
       
       // Open some files
-      virtualFileExplorer.openFile("src/index.ts");
-      virtualFileExplorer.openFile("src/app.ts");
+      virtualFileExplorer.applyAction({
+        name: "open-file",
+        value: "src/index.ts"
+      });
+      virtualFileExplorer.applyAction({
+        name: "open-file",
+        value: "src/app.ts"
+      });
       
       // Check open files
       expect(virtualFileExplorer.getOpenFiles()).toEqual([
@@ -236,15 +242,17 @@ describe("VirtualFileExplorer", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
         { name: "create-folder", value: "src" },
-        { name: "create-file", value: "src/index.ts" }
+        { name: "create-file", value: "src/index.ts" },
+        { name: "open-file", value: "src/index.ts" }
       ];
 
       virtualFileExplorer.applyActions(actions);
       
-      virtualFileExplorer.openFile("src/index.ts");
+      // expect the index.ts file to be open
       expect(virtualFileExplorer.getOpenFiles()).toEqual(["src/index.ts"]);
       
-      virtualFileExplorer.closeFile("src/index.ts");
+      // after closing it, expect no open files
+      virtualFileExplorer.applyAction({ name: "close-file", value: "src/index.ts" });
       expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
     });
 
@@ -257,7 +265,7 @@ describe("VirtualFileExplorer", () => {
 
       virtualFileExplorer.applyActions(actions);
       
-      virtualFileExplorer.closeFile("src/index.ts"); // Should not throw
+      virtualFileExplorer.applyAction({ name: "close-file", value: "src/index.ts" });
       expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
     });
 
@@ -265,7 +273,7 @@ describe("VirtualFileExplorer", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       
       expect(() => {
-        virtualFileExplorer.openFile("nonexistent.ts");
+        virtualFileExplorer.applyAction({ name: "open-file", value: "nonexistent.ts" });
       }).toThrow("File not found: nonexistent.ts");
     });
 
@@ -278,7 +286,7 @@ describe("VirtualFileExplorer", () => {
       virtualFileExplorer.applyActions(actions);
       
       expect(() => {
-        virtualFileExplorer.openFile("src");
+        virtualFileExplorer.applyAction({ name: "open-file", value: "src" });
       }).toThrow("Cannot open a directory: src");
     });
 
@@ -292,8 +300,14 @@ describe("VirtualFileExplorer", () => {
 
       virtualFileExplorer.applyActions(actions);
       
-      virtualFileExplorer.openFile("src/index.ts");
-      virtualFileExplorer.openFile("src/app.ts");
+      virtualFileExplorer.applyAction({
+        name: "open-file",
+        value: "src/index.ts"
+      });
+      virtualFileExplorer.applyAction({
+        name: "open-file",
+        value: "src/app.ts"
+      });
 
       // Rename an open file
       virtualFileExplorer.applyAction({
@@ -304,6 +318,34 @@ describe("VirtualFileExplorer", () => {
       expect(virtualFileExplorer.getOpenFiles()).toEqual([
         "src/app.ts",
         "src/main.ts"
+      ]);
+    });
+  });
+
+  describe("creating, opening, and closing files", () => {
+    it("should reflect the open files sorted in alphabetical order, once they are opened, and also once one is closed", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "create-file", value: "src/index.ts" },
+        { name: "open-file", value: "src/index.ts" },
+        { name: "create-file", value: "src/app.ts" },
+        { name: "open-file", value: "src/app.ts" },
+        { name: "create-file", value: "src/utils.ts" },
+        { name: "open-file", value: "src/utils.ts" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+      expect(virtualFileExplorer.getOpenFiles()).toEqual([
+        "src/app.ts",
+        "src/index.ts",
+        "src/utils.ts"
+      ]);
+
+      // close one of the files
+      virtualFileExplorer.applyAction({ name: "close-file", value: "src/app.ts" });
+      expect(virtualFileExplorer.getOpenFiles()).toEqual([
+        "src/index.ts",
+        "src/utils.ts"
       ]);
     });
   });

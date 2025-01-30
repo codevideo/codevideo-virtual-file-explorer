@@ -20,6 +20,205 @@ export class VirtualFileExplorer {
     }
   }
 
+  applyActions(actions: FileExplorerAction[]) {
+    actions.forEach((action) => {
+      this.applyAction(action);
+    });
+  }
+
+  applyAction(action: FileExplorerAction) {
+    let numTimes = 1;
+    if (isRepeatableAction(action)) {
+      numTimes = parseInt(action.value);
+    }
+
+    // in this switch, let the FileExplorerActions in codevideo-types guide you
+    switch (action.name) {
+      case "create-file": {
+        const { parent, name } = this.getParentDirectory(action.value);
+        parent[name] = this.createFileItem(name);
+        break;
+      }
+
+      case "open-file": {
+        this.openFile(action.value);
+        break;
+      }
+
+      case "close-file": {
+        this.closeFile(action.value);
+        break;
+      }
+
+      case "rename-file": {
+        const [fromPath, toPath] = action.value.split(';')
+          .map(part => part.replace(/^(from:|to:)/, ''));
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+
+        if (fromParent[fromName]) {
+          toParent[toName] = fromParent[fromName];
+          delete fromParent[fromName];
+
+          // Update open files if the renamed file was open
+          if (this.openFiles.has(fromPath)) {
+            this.openFiles.delete(fromPath);
+            this.openFiles.add(toPath);
+          }
+        }
+        break;
+      }
+
+      case "move-file": {
+        const [fromPath, toPath] = action.value.split(';')
+          .map(part => part.replace(/^(from:|to:)/, ''));
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+
+        if (fromParent[fromName]) {
+          toParent[toName] = fromParent[fromName];
+          delete fromParent[fromName];
+        }
+        break;
+      }
+
+      case "copy-file": {
+        const [fromPath, toPath] = action.value.split(';')
+          .map(part => part.replace(/^(from:|to:)/, ''));
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+
+        if (fromParent[fromName]) {
+          toParent[toName] = { ...fromParent[fromName] };
+        }
+        break;
+      }
+
+      case "delete-file": {
+        const { parent, name } = this.getParentDirectory(action.value);
+        delete parent[name];
+        break;
+      }
+
+      case "create-folder": {
+        const { parent, name } = this.getParentDirectory(action.value);
+        parent[name] = this.createDirectoryItem();
+        break;
+      }
+
+      case "rename-folder": {
+        const [fromPath, toPath] = action.value.split(';')
+          .map(part => part.replace(/^(from:|to:)/, ''));
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+
+        if (fromParent[fromName]) {
+          toParent[toName] = fromParent[fromName];
+          delete fromParent[fromName];
+        }
+        break;
+      }
+
+      case "move-folder": {
+        const [fromPath, toPath] = action.value.split(';')
+          .map(part => part.replace(/^(from:|to:)/, ''));
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+
+        if (fromParent[fromName] && fromParent[fromName].type === 'directory') {
+          toParent[toName] = fromParent[fromName];
+          delete fromParent[fromName];
+        }
+        break;
+      }
+
+      case "copy-folder": {
+        const [fromPath, toPath] = action.value.split(';')
+          .map(part => part.replace(/^(from:|to:)/, ''));
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+
+        if (fromParent[fromName] && fromParent[fromName].type === 'directory') {
+          toParent[toName] = this.copyDirectory(fromParent[fromName] as DirectoryNode);
+        }
+        break;
+      }
+
+      case "delete-folder": {
+        const { parent, name } = this.getParentDirectory(action.value);
+        delete parent[name];
+        break;
+      }
+
+      case "toggle-folder": {
+        const { parent, name } = this.getParentDirectory(action.value);
+        if (parent[name] && parent[name].type === 'directory') {
+          const dir = parent[name] as DirectoryNode;
+          dir.collapsed = !dir.collapsed;
+        }
+        break;
+      }
+
+      case "open-file": {
+        // This is a no-op in the file structure, as it's handled by the UI
+        break;
+      }
+    }
+
+    this.actionsApplied.push(action);
+
+    if (this.verbose) {
+      console.log(`Action: ${action.name}`);
+    }
+  }
+
+  getCurrentFileTree(): string {
+    return this.buildTreeString(this.currentFileStructure);
+  }
+
+  getCurrentFileStructure(): IFileStructure {
+    return this.currentFileStructure;
+  }
+
+  getActionsApplied(): FileExplorerAction[] {
+    return this.actionsApplied;
+  }
+
+  /**
+   * Gets the contents of a specific file
+   * @param fileName Full path to the file
+   * @returns The content of the file if it exists
+   * @throws Error if file doesn't exist or if path points to a directory
+   */
+  getFileContents(fileName: string): string {
+    const { parent, name } = this.getParentDirectory(fileName);
+    const file = parent[name];
+
+    if (!file) {
+      throw new Error(`File not found: ${fileName}`);
+    }
+
+    if (file.type === 'directory') {
+      throw new Error(`Path points to a directory, not a file: ${fileName}`);
+    }
+
+    return file.content;
+  }
+
+  /**
+ * Gets the list of currently open files
+ * @returns Array of file paths that are currently open
+ */
+  getOpenFiles(): string[] {
+    return Array.from(this.openFiles).sort();
+  }
+
   private getFileExtension(filename: string): string {
     const parts = filename.split('.');
     return parts.length > 1 ? parts.pop()! : '';
@@ -96,156 +295,9 @@ export class VirtualFileExplorer {
     return newDir;
   }
 
-  applyActions(actions: FileExplorerAction[]) {
-    actions.forEach((action) => {
-      this.applyAction(action);
-    });
-  }
-
-  applyAction(action: FileExplorerAction) {
-    let numTimes = 1;
-    if (isRepeatableAction(action)) {
-      numTimes = parseInt(action.value);
-    }
-
-    switch (action.name) {
-      case "create-file": {
-        const { parent, name } = this.getParentDirectory(action.value);
-        parent[name] = this.createFileItem(name);
-        break;
-      }
-
-      case "rename-file": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
-        
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
-        
-        if (fromParent[fromName]) {
-          toParent[toName] = fromParent[fromName];
-          delete fromParent[fromName];
-
-          // Update open files if the renamed file was open
-          if (this.openFiles.has(fromPath)) {
-            this.openFiles.delete(fromPath);
-            this.openFiles.add(toPath);
-          }
-        }
-        break;
-      }
-
-      case "move-file": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
-        
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
-        
-        if (fromParent[fromName]) {
-          toParent[toName] = fromParent[fromName];
-          delete fromParent[fromName];
-        }
-        break;
-      }
-
-      case "copy-file": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
-        
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
-        
-        if (fromParent[fromName]) {
-          toParent[toName] = { ...fromParent[fromName] };
-        }
-        break;
-      }
-
-      case "delete-file": {
-        const { parent, name } = this.getParentDirectory(action.value);
-        delete parent[name];
-        break;
-      }
-
-      case "create-folder": {
-        const { parent, name } = this.getParentDirectory(action.value);
-        parent[name] = this.createDirectoryItem();
-        break;
-      }
-
-      case "rename-folder": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
-        
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
-        
-        if (fromParent[fromName]) {
-          toParent[toName] = fromParent[fromName];
-          delete fromParent[fromName];
-        }
-        break;
-      }
-
-      case "move-folder": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
-        
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
-        
-        if (fromParent[fromName] && fromParent[fromName].type === 'directory') {
-          toParent[toName] = fromParent[fromName];
-          delete fromParent[fromName];
-        }
-        break;
-      }
-
-      case "copy-folder": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
-        
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
-        
-        if (fromParent[fromName] && fromParent[fromName].type === 'directory') {
-          toParent[toName] = this.copyDirectory(fromParent[fromName] as DirectoryNode);
-        }
-        break;
-      }
-
-      case "delete-folder": {
-        const { parent, name } = this.getParentDirectory(action.value);
-        delete parent[name];
-        break;
-      }
-
-      case "toggle-folder": {
-        const { parent, name } = this.getParentDirectory(action.value);
-        if (parent[name] && parent[name].type === 'directory') {
-          const dir = parent[name] as DirectoryNode;
-          dir.collapsed = !dir.collapsed;
-        }
-        break;
-      }
-
-      case "open-file": {
-        // This is a no-op in the file structure, as it's handled by the UI
-        break;
-      }
-    }
-
-    this.actionsApplied.push(action);
-
-    if (this.verbose) {
-      console.log(`Action: ${action.name}`);
-    }
-  }
-
   private buildTreeString(structure: IFileStructure, indent: string = ""): string {
     let result = "";
-    
+
     // Sort entries: directories first, then files, both alphabetically
     const sortedEntries = Object.entries(structure).sort(([aKey, aValue], [bKey, bValue]) => {
       const aIsDir = aValue.type === 'directory';
@@ -268,45 +320,7 @@ export class VirtualFileExplorer {
     return result;
   }
 
-  getCurrentFileTree(): string {
-    return this.buildTreeString(this.currentFileStructure);
-  }
-
-  getCurrentFileStructure(): IFileStructure {
-    return this.currentFileStructure;
-  }
-
-  getActionsApplied(): FileExplorerAction[] {
-    return this.actionsApplied;
-  }
-
-  /**
-   * Gets the contents of a specific file
-   * @param fileName Full path to the file
-   * @returns The content of the file if it exists
-   * @throws Error if file doesn't exist or if path points to a directory
-   */
-  getFileContents(fileName: string): string {
-    const { parent, name } = this.getParentDirectory(fileName);
-    const file = parent[name];
-
-    if (!file) {
-      throw new Error(`File not found: ${fileName}`);
-    }
-
-    if (file.type === 'directory') {
-      throw new Error(`Path points to a directory, not a file: ${fileName}`);
-    }
-
-    return file.content;
-  }
-
-  /**
-   * Opens a file in the file system
-   * @param fileName Full path to the file
-   * @throws Error if file doesn't exist or if path points to a directory
-   */
-  openFile(fileName: string): void {
+  private openFile(fileName: string): void {
     const { parent, name } = this.getParentDirectory(fileName);
     const file = parent[name];
 
@@ -321,19 +335,7 @@ export class VirtualFileExplorer {
     this.openFiles.add(fileName);
   }
 
-  /**
-   * Closes a file in the file system
-   * @param fileName Full path to the file
-   */
-  closeFile(fileName: string): void {
+  private closeFile(fileName: string): void {
     this.openFiles.delete(fileName);
-  }
-
-  /**
-   * Gets the list of currently open files
-   * @returns Array of file paths that are currently open
-   */
-  getOpenFiles(): string[] {
-    return Array.from(this.openFiles).sort();
   }
 }
