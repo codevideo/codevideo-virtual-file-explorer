@@ -21,9 +21,34 @@ describe("VirtualFileExplorer", () => {
       virtualFileExplorer.applyActions(actions);
       expect(virtualFileExplorer.getCurrentFileTree()).toEqual("file1.ts\nfile2.ts\n");
       
-      const structure = virtualFileExplorer.getCurrentFileStructure();
-      expect(structure["file1.ts"]).toBeDefined();
-      expect(structure["file2.ts"]).toBeDefined();
+      expect(virtualFileExplorer.getCurrentFileStructure()).toEqual({
+        "file1.ts": { 
+          caretPosition: {
+            row: 0,
+            col: 0,
+          },
+          content: "",
+          cursorPosition: { 
+            x: 0, 
+            y: 0 
+          },
+          language: "ts",
+          type: "file",
+        },
+        "file2.ts": {
+          caretPosition: {
+            row: 0,
+            col: 0,
+          },
+          content: "",
+          cursorPosition: { 
+            x: 0, 
+            y: 0 
+          },
+          language: "ts",
+          type: "file",
+        }
+      })
     });
   });
 

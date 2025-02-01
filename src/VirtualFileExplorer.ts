@@ -164,11 +164,6 @@ export class VirtualFileExplorer {
         }
         break;
       }
-
-      case "file-explorer-open-file": {
-        // This is a no-op in the file structure, as it's handled by the UI
-        break;
-      }
     }
 
     this.actionsApplied.push(action);
