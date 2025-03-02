@@ -226,7 +226,7 @@ describe("VirtualFileExplorer", () => {
     });
 
     it("should return only saved file contents", () => {
-      const virtualFileExplorer = new VirtualFileExplorer(undefined, true);
+      const virtualFileExplorer = new VirtualFileExplorer();
       virtualFileExplorer.applyAction({
         name: "file-explorer-create-file",
         value: "~/index.ts"

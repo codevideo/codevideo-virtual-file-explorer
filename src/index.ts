@@ -1,1 +1,1 @@
-export { VirtualFileExplorer } from './VirtualFileExplorer';
+export { VirtualFileExplorer, advancedCommandValueSeparator } from './VirtualFileExplorer';

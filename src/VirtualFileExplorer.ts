@@ -117,8 +117,17 @@ export class VirtualFileExplorer {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+        // Resolve both paths properly
+        const fullFromPath = this.resolvePath(fromPath);
+        const fullToPath = this.resolvePath(toPath);
+
+        if (this.verbose) {
+          console.log(`Renaming file from ${fromPath} to ${toPath}`);
+          console.log(`Resolved paths: from ${fullFromPath} to ${fullToPath}`);
+        }
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fullFromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(fullToPath);
 
         if (fromParent[fromName]) {
           toParent[toName] = fromParent[fromName];
@@ -137,8 +146,17 @@ export class VirtualFileExplorer {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+        // Resolve both paths properly
+        const fullFromPath = this.resolvePath(fromPath);
+        const fullToPath = this.resolvePath(toPath);
+
+        if (this.verbose) {
+          console.log(`Moving file from ${fromPath} to ${toPath}`);
+          console.log(`Resolved paths: from ${fullFromPath} to ${fullToPath}`);
+        }
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fullFromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(fullToPath);
 
         if (fromParent[fromName]) {
           toParent[toName] = fromParent[fromName];
@@ -151,8 +169,17 @@ export class VirtualFileExplorer {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+        // Resolve both paths properly
+        const fullFromPath = this.resolvePath(fromPath);
+        const fullToPath = this.resolvePath(toPath);
+
+        if (this.verbose) {
+          console.log(`Copying file from ${fromPath} to ${toPath}`);
+          console.log(`Resolved paths: from ${fullFromPath} to ${fullToPath}`);
+        }
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fullFromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(fullToPath);
 
         if (fromParent[fromName]) {
           toParent[toName] = { ...fromParent[fromName] };
@@ -200,8 +227,17 @@ export class VirtualFileExplorer {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+        // Resolve both paths properly
+        const fullFromPath = this.resolvePath(fromPath);
+        const fullToPath = this.resolvePath(toPath);
+
+        if (this.verbose) {
+          console.log(`Renaming folder from ${fromPath} to ${toPath}`);
+          console.log(`Resolved paths: from ${fullFromPath} to ${fullToPath}`);
+        }
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fullFromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(fullToPath);
 
         if (fromParent[fromName]) {
           toParent[toName] = fromParent[fromName];
@@ -214,8 +250,17 @@ export class VirtualFileExplorer {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+        // Resolve both paths properly
+        const fullFromPath = this.resolvePath(fromPath);
+        const fullToPath = this.resolvePath(toPath);
+
+        if (this.verbose) {
+          console.log(`Moving folder from ${fromPath} to ${toPath}`);
+          console.log(`Resolved paths: from ${fullFromPath} to ${fullToPath}`);
+        }
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fullFromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(fullToPath);
 
         if (fromParent[fromName] && fromParent[fromName].type === 'directory') {
           toParent[toName] = fromParent[fromName];
@@ -228,8 +273,17 @@ export class VirtualFileExplorer {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
 
-        const { parent: fromParent, name: fromName } = this.getParentDirectory(fromPath);
-        const { parent: toParent, name: toName } = this.getParentDirectory(toPath);
+        // Resolve both paths properly
+        const fullFromPath = this.resolvePath(fromPath);
+        const fullToPath = this.resolvePath(toPath);
+
+        if (this.verbose) {
+          console.log(`Copying folder from ${fromPath} to ${toPath}`);
+          console.log(`Resolved paths: from ${fullFromPath} to ${fullToPath}`);
+        }
+
+        const { parent: fromParent, name: fromName } = this.getParentDirectory(fullFromPath);
+        const { parent: toParent, name: toName } = this.getParentDirectory(fullToPath);
 
         if (fromParent[fromName] && fromParent[fromName].type === 'directory') {
           toParent[toName] = this.copyDirectory(fromParent[fromName] as DirectoryNode);
@@ -398,26 +452,26 @@ export class VirtualFileExplorer {
   getFileContents(fileName: string): string {
     // Resolve the path properly
     const fullPath = this.resolvePath(fileName);
-    
+
     if (this.verbose) console.log(`Getting contents of file: ${fileName}`);
     if (this.verbose) console.log(`Resolved path: ${fullPath}`);
-    
+
     const { parent, name } = this.getParentDirectory(fullPath);
-    
+
     if (this.verbose) console.log(`Parent keys: ${Object.keys(parent)}`);
-    
+
     const file = parent[name];
-  
+
     if (!file) {
       if (this.verbose) console.warn(`File not found: ${fullPath}`);
       return "" // no-op: return empty string
     }
-  
+
     if (file.type === 'directory') {
       if (this.verbose) console.warn(`Path points to a directory, not a file: ${fullPath}`);
       return "" // no-op: return empty string
     }
-  
+
     return file.content;
   }
 

@@ -13,7 +13,19 @@ describe("VirtualFileExplorer", () => {
             // assert
             expect(virtualFileExplorer.getFiles()).toEqual(["/test.md", "/test2.md"]);
             expect(virtualFileExplorer.getLsString()).toEqual("test.md\ntest2.md");
-        })
-        
+        });
+
+        it("should copy files with absolute paths", () => {
+            // arrange
+            const virtualFileExplorer = new VirtualFileExplorer();
+            virtualFileExplorer.applyAction({"name": "file-explorer-create-file", "value": "~/test.md"});
+
+            // act
+            virtualFileExplorer.applyAction({"name": "file-explorer-copy-file", "value": "from:~/test.md;to:~/test2.md"});
+
+            // assert
+            expect(virtualFileExplorer.getFiles()).toEqual(["/test.md", "/test2.md"]);
+            expect(virtualFileExplorer.getLsString()).toEqual("test.md\ntest2.md");
+        });
     });
 });
