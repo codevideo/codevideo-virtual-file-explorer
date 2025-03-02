@@ -1,4 +1,4 @@
-import { VirtualFileExplorer } from "../src/VirtualFileExplorer";
+import { VirtualFileExplorer } from "../../src/VirtualFileExplorer";
 
 describe("VirtualFileExplorer getLsString", () => {
   it("should return an empty string for an empty directory", () => {
@@ -85,4 +85,11 @@ describe("VirtualFileExplorer getLsString", () => {
     // Inside level1/level2, only 'level3' should be visible
     expect(level2Output).toEqual(["level3"].sort());
   });
+
+  it("should return a single string with no new line if there is only a single file", () => {
+    const vfe = new VirtualFileExplorer();
+    vfe.applyAction({ name: "file-explorer-create-file", value: "file1.txt" });
+    const output = vfe.getLsString();
+    expect(output).toBe("file1.txt");
+  })
 });

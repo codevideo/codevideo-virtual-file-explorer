@@ -248,10 +248,17 @@ export class VirtualFileExplorer {
     // Now list the contents of the current directory in alphabetical order
     const fileNames = Object.keys(target).sort();
     let result = "";
+
+    if (fileNames.length === 0) {
+      return "";
+    }
+
     for (const name of fileNames) {
       result += `${name}\n`;
     }
-    return result;
+
+    // return result without the last newline character
+    return result.slice(0, -1);
   }
 
   /**
