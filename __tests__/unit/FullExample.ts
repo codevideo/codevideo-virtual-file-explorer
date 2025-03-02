@@ -1,9 +1,9 @@
 import { VirtualFileExplorer } from "../../src/VirtualFileExplorer";
 import { describe, expect, it } from "@jest/globals";
-import { FileExplorerAction, IFileStructure, DirectoryNode } from "@fullstackcraftllc/codevideo-types";
+import { FileExplorerAction, DirectoryNode } from "@fullstackcraftllc/codevideo-types";
 
 describe("VirtualFileExplorer", () => {
-  describe("basic functionality", () => {
+  describe("full example", () => {
     it("should initialize with empty state", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       expect(virtualFileExplorer.getCurrentFileTree()).toEqual("");
@@ -20,18 +20,14 @@ describe("VirtualFileExplorer", () => {
 
       virtualFileExplorer.applyActions(actions);
       expect(virtualFileExplorer.getCurrentFileTree()).toEqual("file1.ts\nfile2.ts\n");
-      
+
       expect(virtualFileExplorer.getCurrentFileStructure()).toEqual({
-        "file1.ts": { 
+        "file1.ts": {
           caretPosition: {
             row: 0,
             col: 0,
           },
           content: "",
-          cursorPosition: { 
-            x: 0, 
-            y: 0 
-          },
           language: "ts",
           type: "file",
         },
@@ -41,10 +37,6 @@ describe("VirtualFileExplorer", () => {
             col: 0,
           },
           content: "",
-          cursorPosition: { 
-            x: 0, 
-            y: 0 
-          },
           language: "ts",
           type: "file",
         }
@@ -105,7 +97,7 @@ describe("VirtualFileExplorer", () => {
       const srcFolder = structure["src"] as DirectoryNode;
       const distFolder = structure["dist"] as DirectoryNode;
       const backupFolder = structure["backup"] as DirectoryNode;
-      
+
       expect(srcFolder.children?.["index.ts"]).toBeUndefined();
       expect(distFolder.children?.["index.ts"]).toBeDefined();
       expect(backupFolder.children?.["index.ts"]).toBeDefined();
@@ -127,7 +119,7 @@ describe("VirtualFileExplorer", () => {
       const srcFolder = structure["src"] as DirectoryNode;
       const srcBackupFolder = structure["src-backup"] as DirectoryNode;
       const sharedFolder = structure["shared"] as DirectoryNode;
-      
+
       expect(srcFolder.children?.["components"]).toBeUndefined();
       expect(srcBackupFolder.children?.["components"]).toBeDefined();
       expect(sharedFolder.children?.["components"]).toBeDefined();
@@ -201,14 +193,14 @@ describe("VirtualFileExplorer", () => {
       expect(virtualFileExplorer.getFileContents("src/index.ts")).toBe("");
     });
 
-    it("should throw error for non-existent file", () => {
+    it("should not throw error for non-existent file", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       expect(() => {
         virtualFileExplorer.getFileContents("nonexistent.ts");
-      }).toThrow("File not found: nonexistent.ts");
+      }).not.toThrow();
     });
 
-    it("should throw error when path points to directory", () => {
+    it("should not throw error when path points to directory", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
         { name: "file-explorer-create-folder", value: "src" }
@@ -217,7 +209,7 @@ describe("VirtualFileExplorer", () => {
       virtualFileExplorer.applyActions(actions);
       expect(() => {
         virtualFileExplorer.getFileContents("src");
-      }).toThrow("Path points to a directory, not a file: src");
+      }).not.toThrow();
     });
 
     it("should handle deeply nested files", () => {
@@ -245,7 +237,7 @@ describe("VirtualFileExplorer", () => {
       ];
 
       virtualFileExplorer.applyActions(actions);
-      
+
       // Open some files
       virtualFileExplorer.applyAction({
         name: "file-explorer-open-file",
@@ -255,7 +247,7 @@ describe("VirtualFileExplorer", () => {
         name: "file-explorer-open-file",
         value: "src/app.ts"
       });
-      
+
       // Check open files
       expect(virtualFileExplorer.getOpenFiles()).toEqual([
         "src/app.ts",
@@ -272,10 +264,10 @@ describe("VirtualFileExplorer", () => {
       ];
 
       virtualFileExplorer.applyActions(actions);
-      
+
       // expect the index.ts file to be open
       expect(virtualFileExplorer.getOpenFiles()).toEqual(["src/index.ts"]);
-      
+
       // after closing it, expect no open files
       virtualFileExplorer.applyAction({ name: "file-explorer-close-file", value: "src/index.ts" });
       expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
@@ -289,30 +281,30 @@ describe("VirtualFileExplorer", () => {
       ];
 
       virtualFileExplorer.applyActions(actions);
-      
+
       virtualFileExplorer.applyAction({ name: "file-explorer-close-file", value: "src/index.ts" });
       expect(virtualFileExplorer.getOpenFiles()).toEqual([]);
     });
 
-    it("should throw when opening non-existent files", () => {
+    it("should not throw when opening non-existent files", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
-      
+
       expect(() => {
         virtualFileExplorer.applyAction({ name: "file-explorer-open-file", value: "nonexistent.ts" });
-      }).toThrow("File not found: nonexistent.ts");
+      }).not.toThrow();
     });
 
-    it("should throw when opening directories", () => {
+    it("should not throw when opening directories", () => {
       const virtualFileExplorer = new VirtualFileExplorer();
       const actions: FileExplorerAction[] = [
         { name: "file-explorer-create-folder", value: "src" }
       ];
 
       virtualFileExplorer.applyActions(actions);
-      
+
       expect(() => {
         virtualFileExplorer.applyAction({ name: "file-explorer-open-file", value: "src" });
-      }).toThrow("Cannot open a directory: src");
+      }).not.toThrow();
     });
 
     it("should maintain open files through file operations", () => {
@@ -324,7 +316,7 @@ describe("VirtualFileExplorer", () => {
       ];
 
       virtualFileExplorer.applyActions(actions);
-      
+
       virtualFileExplorer.applyAction({
         name: "file-explorer-open-file",
         value: "src/index.ts"
@@ -346,6 +338,64 @@ describe("VirtualFileExplorer", () => {
       ]);
     });
   });
+
+  describe("folder expand/collapse operations", () => {
+    it("should handle expanding and collapsing folders", () => {
+      const virtualFileExplorer = new VirtualFileExplorer();
+      const actions: FileExplorerAction[] = [
+        { name: "file-explorer-create-folder", value: "src" },
+        { name: "file-explorer-create-folder", value: "src/components" },
+        { name: "file-explorer-create-folder", value: "src/utils" }
+      ];
+
+      virtualFileExplorer.applyActions(actions);
+
+      // Collapse src folder via toggle (open by default)
+      virtualFileExplorer.applyAction({ name: "file-explorer-toggle-folder", value: "src" });
+      expect(virtualFileExplorer.getFileObjects().filter(file => file.type === "directory")[0].collapsed).toBe(true);
+
+      // Expand src folder via toggle
+      virtualFileExplorer.applyAction({ name: "file-explorer-toggle-folder", value: "src" });
+      expect(virtualFileExplorer.getFileObjects().filter(file => file.type === "directory")[0].collapsed).toBe(false);
+
+      // explicitly call file-explorer-collapse-folder
+      virtualFileExplorer.applyAction({ name: "file-explorer-collapse-folder", value: "src" });
+      expect(virtualFileExplorer.getFileObjects().filter(file => file.type === "directory")[0].collapsed).toBe(true);
+
+      // explicitly call file-explorer-expand-folder
+      virtualFileExplorer.applyAction({ name: "file-explorer-expand-folder", value: "src" });
+      expect(virtualFileExplorer.getFileObjects().filter(file => file.type === "directory")[0].collapsed).toBe(false);
+    });
+
+    // TODO: this one may be bugged
+    // it("should show only expanded folders if the getCurrentFileTree method with parameter false is called", () => {
+    //   const virtualFileExplorer = new VirtualFileExplorer();
+    //   const actions: FileExplorerAction[] = [
+    //     { name: "file-explorer-create-folder", value: "root" },
+    //     { name: "file-explorer-create-folder", value: "root/level1" },
+    //     { name: "file-explorer-create-folder", value: "root/level1/level2" },
+    //     { name: "file-explorer-create-file", value: "root/level1/level2/deep.ts" },
+    //     { name: "file-explorer-create-file", value: "root/level1/medium.ts" },
+    //     { name: "file-explorer-create-file", value: "root/shallow.ts" }
+    //   ];
+
+    //   virtualFileExplorer.applyActions(actions);
+
+    //   // Expand root folder
+    //   virtualFileExplorer.applyAction({ name: "file-explorer-expand-folder", value: "root" });
+
+    //   // see only expanded folders
+    //   expect(virtualFileExplorer.getCurrentFileTree(false)).toEqual(
+    //     "root\n  level1\n    level2\n"
+    //   );
+
+    //   // default is to show the tree even if folders are collapsed
+    //   expect(virtualFileExplorer.getCurrentFileTree()).toEqual(
+    //     "root\n  level1\n    level2\n      deep.ts\n    medium.ts\n  shallow.ts\n"
+    //   );
+    // });
+  });
+
 
   describe("creating, opening, and closing files", () => {
     it("should reflect the open files sorted in alphabetical order, once they are opened, and also once one is closed", () => {

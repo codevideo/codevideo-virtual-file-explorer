@@ -2,12 +2,13 @@ import {
   isRepeatableAction,
   FileExplorerAction,
   IFileStructure,
-  FileItem,
   FileLeaf,
   DirectoryNode,
+  FileItem,
 } from "@fullstackcraftllc/codevideo-types";
 
 export class VirtualFileExplorer {
+  private presentWorkingDirectory = '~';
   private currentFileStructure: IFileStructure = {};
   private actionsApplied: FileExplorerAction[] = [];
   private openFiles: Set<string> = new Set();
@@ -109,6 +110,22 @@ export class VirtualFileExplorer {
         break;
       }
 
+      case "file-explorer-expand-folder": {
+        const { parent, name } = this.getParentDirectory(action.value);
+        if (parent[name] && parent[name].type === 'directory') {
+          (parent[name] as DirectoryNode).collapsed = false;
+        }
+        break;
+      }
+
+      case "file-explorer-collapse-folder": {
+        const { parent, name } = this.getParentDirectory(action.value);
+        if (parent[name] && parent[name].type === 'directory') {
+          (parent[name] as DirectoryNode).collapsed = true;
+        }
+        break;
+      }
+
       case "file-explorer-rename-folder": {
         const [fromPath, toPath] = action.value.split(';')
           .map(part => part.replace(/^(from:|to:)/, ''));
@@ -173,9 +190,51 @@ export class VirtualFileExplorer {
     }
   }
 
-  getCurrentFileTree(): string {
-    return this.buildTreeString(this.currentFileStructure);
+  setPresentWorkingDirectory(path: string): void {
+    this.presentWorkingDirectory = path;
   }
+
+  getPresentWorkingDirectory(): string {
+    return this.presentWorkingDirectory;
+  }
+
+  getCurrentFileTree(showEvenIfCollapsed: boolean = true): string {
+    return this.buildTreeString(this.currentFileStructure, '', showEvenIfCollapsed);
+  }
+
+  getFiles(): string[] {
+    const files: string[] = [];
+    const traverse = (structure: IFileStructure, path: string) => {
+      for (const [name, item] of Object.entries(structure)) {
+        if (item.type === 'directory') {
+          traverse((item as DirectoryNode).children!, `${path}/${name}`);
+        } else {
+          files.push(`${path}/${name}`);
+        }
+      }
+    };
+
+    traverse(this.currentFileStructure, '');
+
+    return files.sort();
+  }
+
+  getFileObjects(): Array<FileItem> {
+    const fileObjects: Array<FileItem> = [];
+    const traverse = (structure: IFileStructure, path: string) => {
+      for (const [name, item] of Object.entries(structure)) {
+        fileObjects.push(item);
+        if (item.type === 'directory') {
+          traverse((item as DirectoryNode).children!, `${path}/${name}`);
+        }
+      }
+    };
+
+    traverse(this.currentFileStructure, '');
+
+    return fileObjects;
+  }
+    
 
   getCurrentFileStructure(): IFileStructure {
     return this.currentFileStructure;
@@ -197,11 +256,13 @@ export class VirtualFileExplorer {
     const file = parent[name];
 
     if (!file) {
-      throw new Error(`File not found: ${fileName}`);
+      if (this.verbose) console.warn(`File not found: ${fileName}`);
+      return "" // no-op: return empty string
     }
 
     if (file.type === 'directory') {
-      throw new Error(`Path points to a directory, not a file: ${fileName}`);
+      if (this.verbose) console.warn(`Path points to a directory, not a file: ${fileName}`);
+      return "" // no-op: return empty string
     }
 
     return file.content;
@@ -226,7 +287,6 @@ export class VirtualFileExplorer {
       content: '',
       language: this.getFileExtension(path),
       caretPosition: { row: 0, col: 0 },
-      cursorPosition: { x: 0, y: 0 }
     };
   }
 
@@ -291,7 +351,7 @@ export class VirtualFileExplorer {
     return newDir;
   }
 
-  private buildTreeString(structure: IFileStructure, indent: string = ""): string {
+  private buildTreeString(structure: IFileStructure, indent: string = "", showEvenIfCollapsed: boolean = true): string {
     let result = "";
 
     // Sort entries: directories first, then files, both alphabetically
@@ -305,8 +365,8 @@ export class VirtualFileExplorer {
     for (const [name, item] of sortedEntries) {
       if (item.type === 'directory') {
         result += `${indent}${name}\n`;
-        if (!item.collapsed && item.children) {
-          result += this.buildTreeString(item.children, indent + "  ");
+        if ((showEvenIfCollapsed || !item.collapsed) && item.children) {
+          result += this.buildTreeString(item.children, indent + "  ", showEvenIfCollapsed);
         }
       } else {
         result += `${indent}${name}\n`;
@@ -321,11 +381,13 @@ export class VirtualFileExplorer {
     const file = parent[name];
 
     if (!file) {
-      throw new Error(`File not found: ${fileName}`);
+      if (this.verbose) console.warn(`File not found: ${fileName}`);
+      return;
     }
 
     if (file.type === 'directory') {
-      throw new Error(`Cannot open a directory: ${fileName}`);
+      if (this.verbose) console.warn(`Cannot open a directory: ${fileName}`);
+      return;
     }
 
     this.openFiles.add(fileName);
