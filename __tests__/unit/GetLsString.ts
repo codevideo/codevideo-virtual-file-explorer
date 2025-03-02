@@ -29,7 +29,7 @@ describe("VirtualFileExplorer getLsString", () => {
     vfe.applyAction({ name: "file-explorer-create-folder", value: "folderA" });
     vfe.applyAction({ name: "file-explorer-create-file", value: "folderA/fileB.txt" });
     // Set working directory to the subfolder.
-    vfe.setPresentWorkingDirectory("~/folderA");
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~/folderA" });
     
     const output = vfe.getLsString();
     // In folderA, we expect only fileB.txt to be listed.
@@ -39,7 +39,7 @@ describe("VirtualFileExplorer getLsString", () => {
   it("should return an empty string if the presentWorkingDirectory does not exist", () => {
     const vfe = new VirtualFileExplorer();
     // Set the working directory to a non-existent directory.
-    vfe.setPresentWorkingDirectory("~/nonexistent");
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~/nonexistent" });
     expect(vfe.getLsString()).toBe("");
   });
 
@@ -68,19 +68,19 @@ describe("VirtualFileExplorer getLsString", () => {
     vfe.applyAction({ name: "file-explorer-create-folder", value: "level1/level2/level3" });
 
     // Act & Assert for root level
-    vfe.setPresentWorkingDirectory("~");
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~" });
     const rootOutput = vfe.getLsString().trim().split("\n").sort();
     // At root, only 'level1' and 'level1.txt' should be visible
     expect(rootOutput).toEqual(["level1", "level1.txt"].sort());
 
     // Act & Assert for level1
-    vfe.setPresentWorkingDirectory("~/level1");
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~/level1" });
     const level1Output = vfe.getLsString().trim().split("\n").sort();
     // Inside level1, only 'level2' and 'level2.txt' should be visible
     expect(level1Output).toEqual(["level2", "level2.txt"].sort());
 
     // Act & Assert for level1/level2
-    vfe.setPresentWorkingDirectory("~/level1/level2");
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~/level1/level2" });
     const level2Output = vfe.getLsString().trim().split("\n").sort();
     // Inside level1/level2, only 'level3' should be visible
     expect(level2Output).toEqual(["level3"].sort());
@@ -92,4 +92,62 @@ describe("VirtualFileExplorer getLsString", () => {
     const output = vfe.getLsString();
     expect(output).toBe("file1.txt");
   })
+
+  // with full paths
+  it("should work with change of working directory", () => {
+    // make a test folder
+    // move into the folder
+    // create a file1.txt
+    // check if ls returns file1.txt only
+
+    // arrange
+    const vfe = new VirtualFileExplorer(undefined, true);
+    vfe.applyAction({ name: "file-explorer-create-folder", value: "~/test" });
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~/test" });
+    vfe.applyAction({ name: "file-explorer-create-file", value: "~/test/file1.txt" });
+
+    // act
+    const output = vfe.getLsString();
+
+    // assert
+    expect(output).toBe("file1.txt");
+
+    // move back to root
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~" });
+
+    // act
+    const outputRoot = vfe.getLsString();
+
+    // assert
+    expect(outputRoot).toBe("test");
+  });
+
+  // with relative paths
+  it("should work with change of working directory with relative paths", () => {
+    // make a test folder
+    // move into the folder
+    // create a file1.txt
+    // check if ls returns file1.txt only
+
+    // arrange
+    const vfe = new VirtualFileExplorer(undefined, true);
+    vfe.applyAction({ name: "file-explorer-create-folder", value: "test" });
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "test" });
+    vfe.applyAction({ name: "file-explorer-create-file", value: "file1.txt" });
+
+    // act
+    const output = vfe.getLsString();
+
+    // assert
+    expect(output).toBe("file1.txt");
+
+    // move back to root
+    vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~" });
+
+    // act
+    const outputRoot = vfe.getLsString();
+
+    // assert
+    expect(outputRoot).toBe("test");
+  });
 });

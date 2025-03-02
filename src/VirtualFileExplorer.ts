@@ -8,7 +8,7 @@ import {
 } from "@fullstackcraftllc/codevideo-types";
 
 export class VirtualFileExplorer {
-  private presentWorkingDirectory = '~';
+  private presentWorkingDirectory = '';
   private currentFileStructure: IFileStructure = {};
   private actionsApplied: FileExplorerAction[] = [];
   private openFiles: Set<string> = new Set();
@@ -27,6 +27,26 @@ export class VirtualFileExplorer {
     });
   }
 
+  /**
+ * Resolves a path against the current working directory if needed
+ * @param path Path to resolve
+ * @returns Properly resolved path
+ */
+  private resolvePath(path: string): string {
+    // If it already starts with '~', it's an absolute path but we remove the '~'
+    if (path.startsWith('~')) {
+      return path.slice(1);
+    }
+
+    // Otherwise we assume its a relative path and resolve it against the current working directory
+    return `${this.presentWorkingDirectory}/${path}`;
+
+
+    // // For paths like "src/index.ts" without a leading '~' or '/', 
+    // // we treat them as starting from root by default for backward compatibility
+    // return `~/${path}`;
+  }
+
   applyAction(action: FileExplorerAction) {
     let numTimes = 1;
     if (isRepeatableAction(action)) {
@@ -35,11 +55,25 @@ export class VirtualFileExplorer {
 
     // in this switch, let the FileExplorerActions in codevideo-types guide you
     switch (action.name) {
+      // cross domain actions (from terminal mainly)
+      case "file-explorer-set-present-working-directory": {
+        this.setPresentWorkingDirectory(action.value);
+        break;
+      }
       case "file-explorer-create-file": {
-        const { parent, name } = this.getParentDirectory(action.value);
+        // Resolve the path appropriately
+        const fullPath = this.resolvePath(action.value);
+
+        if (this.verbose) {
+          console.log(`Creating file: ${action.value}`);
+          console.log(`Resolved path: ${fullPath}`);
+        }
+
+        const { parent, name } = this.getParentDirectory(fullPath);
         parent[name] = this.createFileItem(name);
         break;
       }
+
 
       case "file-explorer-open-file": {
         this.openFile(action.value);
@@ -105,7 +139,15 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-create-folder": {
-        const { parent, name } = this.getParentDirectory(action.value);
+        // Resolve the path appropriately
+        const fullPath = this.resolvePath(action.value);
+
+        if (this.verbose) {
+          console.log(`Creating folder: ${action.value}`);
+          console.log(`Resolved path: ${fullPath}`);
+        }
+
+        const { parent, name } = this.getParentDirectory(fullPath);
         parent[name] = this.createDirectoryItem();
         break;
       }
@@ -190,7 +232,11 @@ export class VirtualFileExplorer {
     }
   }
 
-  setPresentWorkingDirectory(path: string): void {
+  private setPresentWorkingDirectory(path: string): void {
+    // if we get a "~" that's just the GUI symbol for the root directory
+    if (path === '~') {
+      path = '';
+    }
     this.presentWorkingDirectory = path;
   }
 
@@ -227,38 +273,63 @@ export class VirtualFileExplorer {
    * Gets an 'ls' formatted list of files in the current directory
    * @returns String of folders and files in the current directory in alphabetical order
    */
+  /**
+ * Gets an 'ls' formatted list of files in the current directory
+ * @returns String of folders and files in the current directory in alphabetical order
+ */
   getLsString(): string {
     // Start from the root of the virtual file structure
     let target: IFileStructure = this.currentFileStructure;
+
     // Remove '~' if it is present
     let path = this.presentWorkingDirectory;
     if (path.startsWith('~')) {
       path = path.slice(1);
     }
+
     // Get path components and traverse the tree
     const components = this.getPathComponents(path);
+
+    if (this.verbose) {
+      console.log('getLsString - Current path:', this.presentWorkingDirectory);
+      console.log('getLsString - Processed path:', path);
+      console.log('getLsString - Path components:', components);
+      console.log('getLsString - Initial structure:', JSON.stringify(this.currentFileStructure, null, 2));
+    }
+
+    // Traverse through the path components to find the target directory
     for (const component of components) {
+      if (this.verbose) console.log(`getLsString - Checking component: "${component}"`);
+
       if (target[component] && target[component].type === 'directory') {
+        if (this.verbose) console.log(`getLsString - Found directory: ${component}`);
+        // Access the children property directly
         target = (target[component] as DirectoryNode).children!;
+
+        if (this.verbose) console.log('getLsString - Children structure:', JSON.stringify(target, null, 2));
       } else {
-        // If the directory doesn't exist, return empty string (or you can throw an error)
+        if (this.verbose) {
+          console.log(`getLsString - Directory not found: ${component}`);
+          console.log('getLsString - Available keys:', Object.keys(target));
+        }
+        // If the directory doesn't exist, return empty string
         return "";
       }
     }
+
     // Now list the contents of the current directory in alphabetical order
     const fileNames = Object.keys(target).sort();
-    let result = "";
+
+    if (this.verbose) {
+      console.log('getLsString - Final target directory contents:', fileNames);
+    }
 
     if (fileNames.length === 0) {
       return "";
     }
 
-    for (const name of fileNames) {
-      result += `${name}\n`;
-    }
-
-    // return result without the last newline character
-    return result.slice(0, -1);
+    // Format the output - join with newlines but no trailing newline
+    return fileNames.join('\n');
   }
 
   /**
@@ -280,7 +351,7 @@ export class VirtualFileExplorer {
 
     return fileObjects;
   }
-    
+
 
   getCurrentFileStructure(): IFileStructure {
     return this.currentFileStructure;
