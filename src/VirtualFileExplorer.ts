@@ -202,6 +202,10 @@ export class VirtualFileExplorer {
     return this.buildTreeString(this.currentFileStructure, '', showEvenIfCollapsed);
   }
 
+  /**
+   * Gets the list of files in the current directory
+   * @returns Array of file paths in the current directory
+   */
   getFiles(): string[] {
     const files: string[] = [];
     const traverse = (structure: IFileStructure, path: string) => {
@@ -219,6 +223,41 @@ export class VirtualFileExplorer {
     return files.sort();
   }
 
+  /**
+   * Gets an 'ls' formatted list of files in the current directory
+   * @returns String of folders and files in the current directory in alphabetical order
+   */
+  getLsString(): string {
+    // Start from the root of the virtual file structure
+    let target: IFileStructure = this.currentFileStructure;
+    // Remove '~' if it is present
+    let path = this.presentWorkingDirectory;
+    if (path.startsWith('~')) {
+      path = path.slice(1);
+    }
+    // Get path components and traverse the tree
+    const components = this.getPathComponents(path);
+    for (const component of components) {
+      if (target[component] && target[component].type === 'directory') {
+        target = (target[component] as DirectoryNode).children!;
+      } else {
+        // If the directory doesn't exist, return empty string (or you can throw an error)
+        return "";
+      }
+    }
+    // Now list the contents of the current directory in alphabetical order
+    const fileNames = Object.keys(target).sort();
+    let result = "";
+    for (const name of fileNames) {
+      result += `${name}\n`;
+    }
+    return result;
+  }
+
+  /**
+   * Gets all files and directories in the file explorer
+   * @returns 
+   */
   getFileObjects(): Array<FileItem> {
     const fileObjects: Array<FileItem> = [];
     const traverse = (structure: IFileStructure, path: string) => {
