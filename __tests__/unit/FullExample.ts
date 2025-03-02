@@ -1,4 +1,4 @@
-import { VirtualFileExplorer } from "../../src/VirtualFileExplorer";
+import { advancedCommandValueSeparator, VirtualFileExplorer } from "../../src/VirtualFileExplorer";
 import { describe, expect, it } from "@jest/globals";
 import { FileExplorerAction, DirectoryNode } from "@fullstackcraftllc/codevideo-types";
 
@@ -223,6 +223,24 @@ describe("VirtualFileExplorer", () => {
 
       virtualFileExplorer.applyActions(actions);
       expect(virtualFileExplorer.getFileContents("src/components/ui/Button.tsx")).toBe("");
+    });
+
+    it("should return only saved file contents", () => {
+      const virtualFileExplorer = new VirtualFileExplorer(undefined, true);
+      virtualFileExplorer.applyAction({
+        name: "file-explorer-create-file",
+        value: "~/index.ts"
+      });
+
+      // this is actually only called from above in virtual-ide, but use it as a shim here for testing
+      virtualFileExplorer.applyAction({
+        name: "file-explorer-set-file-contents",
+        value: `~/index.ts${advancedCommandValueSeparator}console.log('Hello, world!');`
+      });
+
+      expect(virtualFileExplorer.getFileContents("~/index.ts")).toBe(
+        "console.log('Hello, world!');"
+      );
     });
   });
 

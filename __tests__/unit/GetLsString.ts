@@ -101,7 +101,7 @@ describe("VirtualFileExplorer getLsString", () => {
     // check if ls returns file1.txt only
 
     // arrange
-    const vfe = new VirtualFileExplorer(undefined, true);
+    const vfe = new VirtualFileExplorer();
     vfe.applyAction({ name: "file-explorer-create-folder", value: "~/test" });
     vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "~/test" });
     vfe.applyAction({ name: "file-explorer-create-file", value: "~/test/file1.txt" });
@@ -130,7 +130,7 @@ describe("VirtualFileExplorer getLsString", () => {
     // check if ls returns file1.txt only
 
     // arrange
-    const vfe = new VirtualFileExplorer(undefined, true);
+    const vfe = new VirtualFileExplorer();
     vfe.applyAction({ name: "file-explorer-create-folder", value: "test" });
     vfe.applyAction({ name: "file-explorer-set-present-working-directory", value: "test" });
     vfe.applyAction({ name: "file-explorer-create-file", value: "file1.txt" });

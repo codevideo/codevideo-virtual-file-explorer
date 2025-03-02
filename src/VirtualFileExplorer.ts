@@ -7,6 +7,10 @@ import {
   FileItem,
 } from "@fullstackcraftllc/codevideo-types";
 
+// five underscores should be unique enough to not be in a file name
+// TODO: move to codevideo-types, replace in from / to commands, and add to UI with an isAdvancedValueAction
+export const advancedCommandValueSeparator = '_____';
+
 export class VirtualFileExplorer {
   private presentWorkingDirectory = '';
   private currentFileStructure: IFileStructure = {};
@@ -60,6 +64,30 @@ export class VirtualFileExplorer {
         this.setPresentWorkingDirectory(action.value);
         break;
       }
+
+      case "file-explorer-set-file-contents": {
+        const [fileName, content] = action.value.split(advancedCommandValueSeparator);
+        if (this.verbose) console.log(`Setting content of file ${fileName} to: ${content}`);
+
+        // Resolve the path properly
+        const fullPath = this.resolvePath(fileName);
+
+        if (this.verbose) console.log(`Resolved path for content: ${fullPath}`);
+
+        const { parent, name } = this.getParentDirectory(fullPath);
+        if (this.verbose) console.log(`Parent: ${parent}, name: ${name}`);
+
+        // Check if the file exists
+        if (!parent[name]) {
+          if (this.verbose) console.log(`File ${name} not found in parent. Available keys: ${Object.keys(parent)}`);
+          // Could optionally create the file here if desired
+          // parent[name] = this.createFileItem(name);
+        }
+
+        parent[name].content = content;
+        break;
+      }
+
       case "file-explorer-create-file": {
         // Resolve the path appropriately
         const fullPath = this.resolvePath(action.value);
@@ -362,26 +390,34 @@ export class VirtualFileExplorer {
   }
 
   /**
-   * Gets the contents of a specific file
+   * Gets the contents of a specific file. Changes in the editor are only carried over here until the file is explicitly saved in virtual-ide.
    * @param fileName Full path to the file
    * @returns The content of the file if it exists
    * @throws Error if file doesn't exist or if path points to a directory
    */
-  // TODO this is handled by the virtual editor... maybe its good to have it here too? or... we have files point to @fullstackcraftllc/codevideo-virtual-editor(s) here
   getFileContents(fileName: string): string {
-    const { parent, name } = this.getParentDirectory(fileName);
+    // Resolve the path properly
+    const fullPath = this.resolvePath(fileName);
+    
+    if (this.verbose) console.log(`Getting contents of file: ${fileName}`);
+    if (this.verbose) console.log(`Resolved path: ${fullPath}`);
+    
+    const { parent, name } = this.getParentDirectory(fullPath);
+    
+    if (this.verbose) console.log(`Parent keys: ${Object.keys(parent)}`);
+    
     const file = parent[name];
-
+  
     if (!file) {
-      if (this.verbose) console.warn(`File not found: ${fileName}`);
+      if (this.verbose) console.warn(`File not found: ${fullPath}`);
       return "" // no-op: return empty string
     }
-
+  
     if (file.type === 'directory') {
-      if (this.verbose) console.warn(`Path points to a directory, not a file: ${fileName}`);
+      if (this.verbose) console.warn(`Path points to a directory, not a file: ${fullPath}`);
       return "" // no-op: return empty string
     }
-
+  
     return file.content;
   }
 
