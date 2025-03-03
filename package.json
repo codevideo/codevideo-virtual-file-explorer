@@ -1,6 +1,6 @@
 {
   "name": "@fullstackcraftllc/codevideo-virtual-file-explorer",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "TypeScript class that simulates a file explorer in an IDE.",
   "type": "module",
   "main": "dist/index.js",

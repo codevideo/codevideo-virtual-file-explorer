@@ -11,6 +11,9 @@ import {
 // TODO: move to codevideo-types, replace in from / to commands, and add to UI with an isAdvancedValueAction
 export const advancedCommandValueSeparator = '_____';
 
+/**
+ * Represents a virtual file explorer that can be used to simulate file system operations in the CodeVideo ecosystem.
+ */
 export class VirtualFileExplorer {
   private presentWorkingDirectory = '';
   private currentFileStructure: IFileStructure = {};
@@ -25,30 +28,14 @@ export class VirtualFileExplorer {
     }
   }
 
+  /**
+   * Applies a list of actions to the virtual file explorer
+   * @param actions List of actions to apply
+   */
   applyActions(actions: FileExplorerAction[]) {
     actions.forEach((action) => {
       this.applyAction(action);
     });
-  }
-
-  /**
- * Resolves a path against the current working directory if needed
- * @param path Path to resolve
- * @returns Properly resolved path
- */
-  private resolvePath(path: string): string {
-    // If it already starts with '~', it's an absolute path but we remove the '~'
-    if (path.startsWith('~')) {
-      return path.slice(1);
-    }
-
-    // Otherwise we assume its a relative path and resolve it against the current working directory
-    return `${this.presentWorkingDirectory}/${path}`;
-
-
-    // // For paths like "src/index.ts" without a leading '~' or '/', 
-    // // we treat them as starting from root by default for backward compatibility
-    // return `~/${path}`;
   }
 
   applyAction(action: FileExplorerAction) {
@@ -314,18 +301,19 @@ export class VirtualFileExplorer {
     }
   }
 
-  private setPresentWorkingDirectory(path: string): void {
-    // if we get a "~" that's just the GUI symbol for the root directory
-    if (path === '~') {
-      path = '';
-    }
-    this.presentWorkingDirectory = path;
-  }
-
+  /**
+   * Gets the present working directory
+   * @returns The present working directory
+   */
   getPresentWorkingDirectory(): string {
     return this.presentWorkingDirectory;
   }
 
+  /**
+   * Gets the current file tree in a string format
+   * @param showEvenIfCollapsed Whether to show collapsed directories in the tree
+   * @returns String representation of the current file tree
+   */
   getCurrentFileTree(showEvenIfCollapsed: boolean = true): string {
     return this.buildTreeString(this.currentFileStructure, '', showEvenIfCollapsed);
   }
@@ -355,10 +343,6 @@ export class VirtualFileExplorer {
    * Gets an 'ls' formatted list of files in the current directory
    * @returns String of folders and files in the current directory in alphabetical order
    */
-  /**
- * Gets an 'ls' formatted list of files in the current directory
- * @returns String of folders and files in the current directory in alphabetical order
- */
   getLsString(): string {
     // Start from the root of the virtual file structure
     let target: IFileStructure = this.currentFileStructure;
@@ -415,8 +399,8 @@ export class VirtualFileExplorer {
   }
 
   /**
-   * Gets all files and directories in the file explorer
-   * @returns 
+   * Gets all file and directory objects in the current file structure
+   * @returns Array of file and directory objects
    */
   getFileObjects(): Array<FileItem> {
     const fileObjects: Array<FileItem> = [];
@@ -435,10 +419,18 @@ export class VirtualFileExplorer {
   }
 
 
+  /**
+   * Gets the current file structure
+   * @returns The current file structure
+   */
   getCurrentFileStructure(): IFileStructure {
     return this.currentFileStructure;
   }
 
+  /**
+   * Gets the list of actions applied to the virtual file explorer
+   * @returns Array of actions applied
+   */
   getActionsApplied(): FileExplorerAction[] {
     return this.actionsApplied;
   }
@@ -447,7 +439,6 @@ export class VirtualFileExplorer {
    * Gets the contents of a specific file. Changes in the editor are only carried over here until the file is explicitly saved in virtual-ide.
    * @param fileName Full path to the file
    * @returns The content of the file if it exists
-   * @throws Error if file doesn't exist or if path points to a directory
    */
   getFileContents(fileName: string): string {
     // Resolve the path properly
@@ -483,6 +474,32 @@ export class VirtualFileExplorer {
     return Array.from(this.openFiles).sort();
   }
 
+  /**
+   * Sets the verbose mode for the virtual file explorer
+   * @param verbose Whether to enable verbose
+   */
+  setVerbose(verbose: boolean): void {
+    this.verbose = verbose;
+  }
+
+  private setPresentWorkingDirectory(path: string): void {
+    // if we get a "~" that's just the GUI symbol for the root directory
+    if (path === '~') {
+      path = '';
+    }
+    this.presentWorkingDirectory = path;
+  }
+
+  private resolvePath(path: string): string {
+    // If it already starts with '~', it's an absolute path but we remove the '~'
+    if (path.startsWith('~')) {
+      return path.slice(1);
+    }
+
+    // Otherwise we assume its a relative path and resolve it against the current working directory
+    return `${this.presentWorkingDirectory}/${path}`;
+  }
+
   private getFileExtension(filename: string): string {
     const parts = filename.split('.');
     return parts.length > 1 ? parts.pop()! : '';
@@ -508,18 +525,6 @@ export class VirtualFileExplorer {
 
   private getPathComponents(path: string): string[] {
     return path.split('/').filter(component => component.length > 0);
-  }
-
-  private ensureDirectoryExists(path: string): void {
-    const components = this.getPathComponents(path);
-    let current = this.currentFileStructure;
-
-    for (const component of components) {
-      if (!current[component]) {
-        current[component] = this.createDirectoryItem();
-      }
-      current = (current[component] as DirectoryNode).children!;
-    }
   }
 
   private getParentDirectory(path: string): { parent: IFileStructure; name: string } {
