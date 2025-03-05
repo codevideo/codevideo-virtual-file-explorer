@@ -1,6 +1,6 @@
-import { advancedCommandValueSeparator, VirtualFileExplorer } from "../../src/VirtualFileExplorer";
+import { VirtualFileExplorer } from "../../src/VirtualFileExplorer";
 import { describe, expect, it } from "@jest/globals";
-import { FileExplorerAction, DirectoryNode } from "@fullstackcraftllc/codevideo-types";
+import { FileExplorerAction, DirectoryNode, advancedCommandValueSeparator } from "@fullstackcraftllc/codevideo-types";
 
 describe("VirtualFileExplorer", () => {
   describe("full example", () => {
@@ -87,9 +87,9 @@ describe("VirtualFileExplorer", () => {
         { name: "file-explorer-create-folder", value: "src" },
         { name: "file-explorer-create-folder", value: "dist" },
         { name: "file-explorer-create-file", value: "src/index.ts" },
-        { name: "file-explorer-copy-file", value: "from:src/index.ts;to:dist/index.ts" },
+        { name: "file-explorer-copy-file", value: `src/index.ts${advancedCommandValueSeparator}dist/index.ts` },
         { name: "file-explorer-create-folder", value: "backup" },
-        { name: "file-explorer-move-file", value: "from:src/index.ts;to:backup/index.ts" }
+        { name: "file-explorer-move-file", value: `src/index.ts${advancedCommandValueSeparator}backup/index.ts` }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -110,8 +110,8 @@ describe("VirtualFileExplorer", () => {
         { name: "file-explorer-create-file", value: "src/index.ts" },
         { name: "file-explorer-create-folder", value: "src/components" },
         { name: "file-explorer-create-file", value: "src/components/Button.tsx" },
-        { name: "file-explorer-copy-folder", value: "from:src;to:src-backup" },
-        { name: "file-explorer-move-folder", value: "from:src/components;to:shared/components" }
+        { name: "file-explorer-copy-folder", value: `src${advancedCommandValueSeparator}src-backup` },
+        { name: "file-explorer-move-folder", value: `src/components${advancedCommandValueSeparator}shared/components` }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -148,9 +148,9 @@ describe("VirtualFileExplorer", () => {
       const actions: FileExplorerAction[] = [
         { name: "file-explorer-create-folder", value: "src" },
         { name: "file-explorer-create-file", value: "src/oldName.ts" },
-        { name: "file-explorer-rename-file", value: "from:src/oldName.ts;to:src/newName.ts" },
+        { name: "file-explorer-rename-file", value: `src/oldName.ts${advancedCommandValueSeparator}src/newName.ts` },
         { name: "file-explorer-create-folder", value: "src/subfolder" },
-        { name: "file-explorer-rename-folder", value: "from:src/subfolder;to:src/betterName" }
+        { name: "file-explorer-rename-folder", value: `src/subfolder${advancedCommandValueSeparator}src/betterName` }
       ];
 
       virtualFileExplorer.applyActions(actions);
@@ -347,7 +347,7 @@ describe("VirtualFileExplorer", () => {
       // Rename an open file
       virtualFileExplorer.applyAction({
         name: "file-explorer-rename-file",
-        value: "from:src/index.ts;to:src/main.ts"
+        value: `src/index.ts${advancedCommandValueSeparator}src/main.ts`
       });
 
       expect(virtualFileExplorer.getOpenFiles()).toEqual([

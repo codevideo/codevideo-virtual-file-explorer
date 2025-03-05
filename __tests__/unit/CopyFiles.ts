@@ -1,3 +1,4 @@
+import { advancedCommandValueSeparator } from "@fullstackcraftllc/codevideo-types";
 import { VirtualFileExplorer } from "../../src/VirtualFileExplorer";
 
 describe("VirtualFileExplorer", () => {
@@ -8,7 +9,7 @@ describe("VirtualFileExplorer", () => {
             virtualFileExplorer.applyAction({"name": "file-explorer-create-file", "value": "test.md"});
 
             // act
-            virtualFileExplorer.applyAction({"name": "file-explorer-copy-file", "value": "from:test.md;to:test2.md"});
+            virtualFileExplorer.applyAction({"name": "file-explorer-copy-file", "value": `test.md${advancedCommandValueSeparator}test2.md`});
 
             // assert
             expect(virtualFileExplorer.getFiles()).toEqual(["/test.md", "/test2.md"]);
@@ -21,7 +22,7 @@ describe("VirtualFileExplorer", () => {
             virtualFileExplorer.applyAction({"name": "file-explorer-create-file", "value": "~/test.md"});
 
             // act
-            virtualFileExplorer.applyAction({"name": "file-explorer-copy-file", "value": "from:~/test.md;to:~/test2.md"});
+            virtualFileExplorer.applyAction({"name": "file-explorer-copy-file", "value": `~/test.md${advancedCommandValueSeparator}~/test2.md`});
 
             // assert
             expect(virtualFileExplorer.getFiles()).toEqual(["/test.md", "/test2.md"]);

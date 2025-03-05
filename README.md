@@ -10,6 +10,7 @@ This library heavily relies on the types from [codevideo-types](https://github.c
 
 ```typescript
 import { VirtualFileExplorer } from '@fullstackcraftllc/codevideo-virtual-file-explorer';
+import { advancedCommandSeparator } from '@fullstackcraftllc/codevideo-types';
 
 // Initialize a VirtualFileExplorer instance
 const virtualFileExplorer = new VirtualFileExplorer();
@@ -26,22 +27,22 @@ virtualFileExplorer.applyActions([
   { name: 'create-file', value: 'src/index.js' },
   
   // rename test.js to main.js
-  { name: 'rename-file', value: 'from:test.js;to:main.js' },
+  { name: 'rename-file', value: `test.js${advancedCommandSeparator}main.js` },
   
   // copy index.js
-  { name: 'copy-file', value: 'from:src/index.js;to:src/index.backup.js' },
+  { name: 'copy-file', value: `src/index.js${advancedCommandSeparator}src/index.backup.js` },
   
   // move main.js into src
-  { name: 'move-file', value: 'from:main.js;to:src/main.js' },
+  { name: 'move-file', value: `main.js${advancedCommandSeparator}src/main.js` },
   
   // create components folder
   { name: 'create-folder', value: 'src/components' },
   
   // copy components folder
-  { name: 'copy-folder', value: 'from:src/components;to:src/shared' },
+  { name: 'copy-folder', value: `src/components${advancedCommandSeparator}src/shared` },
   
   // move shared folder to root
-  { name: 'move-folder', value: 'from:src/shared;to:shared' },
+  { name: 'move-folder', value: `src/shared${advancedCommandSeparator}shared` },
   
   // toggle src folder collapsed state
   { name: 'toggle-folder', value: 'src' },
@@ -66,18 +67,20 @@ console.log(actionsApplied);
 
 ## Available Actions
 
-- `create-file`: Create a new file
-- `open-file`: Open a file (UI handler)
-- `rename-file`: Rename a file using format "from:oldpath;to:newpath"
-- `delete-file`: Delete a file
-- `move-file`: Move a file using format "from:oldpath;to:newpath"
-- `copy-file`: Copy a file using format "from:sourcepath;to:destpath"
-- `create-folder`: Create a new folder
-- `rename-folder`: Rename a folder using format "from:oldpath;to:newpath"
-- `delete-folder`: Delete a folder
-- `toggle-folder`: Toggle folder's collapsed state
-- `move-folder`: Move a folder using format "from:oldpath;to:newpath"
-- `copy-folder`: Copy a folder using format "from:sourcepath;to:destpath"
+- `file-explorer-create-file`: Create a new file
+- `file-explorer-open-file`: Open a file (UI handler)
+- `file-explorer-rename-file`: Rename a file using format "oldpath_____newpath"
+- `file-explorer-delete-file`: Delete a file
+- `file-explorer-move-file`: Move a file using format "oldpath_____newpath"
+- `file-explorer-copy-file`: Copy a file using format "sourcepath_____destpath"
+- `file-explorer-create-folder`: Create a new folder
+- `file-explorer-rename-folder`: Rename a folder using format "oldpath_____newpath"
+- `file-explorer-delete-folder`: Delete a folder
+- `file-explorer-toggle-folder`: Toggle folder's collapsed state
+- `file-explorer-move-folder`: Move a folder using format "oldpath_____newpath"
+- `file-explorer-copy-folder`: Copy a folder using format "sourcepath_____destpath"
+
+Where "_____" is a separator string used for advanced commands. The separator string can be imported using the `advancedCommandSeparator` exported from `@fullstackcraftllc/codevideo-types`.
 
 ## Available Methods
 

@@ -5,11 +5,8 @@ import {
   FileLeaf,
   DirectoryNode,
   FileItem,
+  advancedCommandValueSeparator
 } from "@fullstackcraftllc/codevideo-types";
-
-// five underscores should be unique enough to not be in a file name
-// TODO: move to codevideo-types, replace in from / to commands, and add to UI with an isAdvancedValueAction
-export const advancedCommandValueSeparator = '_____';
 
 /**
  * Represents a virtual file explorer that can be used to simulate file system operations in the CodeVideo ecosystem.
@@ -53,7 +50,17 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-set-file-contents": {
-        const [fileName, content] = action.value.split(advancedCommandValueSeparator);
+        const parts = action.value.split(advancedCommandValueSeparator);
+
+        // poor input; no op! 
+        // but at least log if verbose
+        if (parts.length !== 2) {
+          if (this.verbose) console.warn(`Invalid value for file-explorer-set-file-contents: ${action.value}`);
+          break;
+        }
+        const fileName = parts[0];
+        const content = parts[1];
+
         if (this.verbose) console.log(`Setting content of file ${fileName} to: ${content}`);
 
         // Resolve the path properly
@@ -66,8 +73,9 @@ export class VirtualFileExplorer {
 
         // Check if the file exists
         if (!parent[name]) {
-          if (this.verbose) console.log(`File ${name} not found in parent. Available keys: ${Object.keys(parent)}`);
-          // Could optionally create the file here if desired
+          if (this.verbose) console.log(`File ${name} not found in parent. Cannot set content. Available keys: ${Object.keys(parent)}`);
+          break;
+          // Could optionally create the file here if desired - for now user has to ensure it exists
           // parent[name] = this.createFileItem(name);
         }
 
@@ -101,8 +109,16 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-rename-file": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
+        const parts = action.value.split(advancedCommandValueSeparator);
+
+        // poor input; no op!
+        // but at least log if verbose
+        if (parts.length !== 2) {
+          if (this.verbose) console.warn(`Invalid value for file-explorer-rename-file: ${action.value}`);
+          break;
+        }
+        const fromPath = parts[0];
+        const toPath = parts[1];
 
         // Resolve both paths properly
         const fullFromPath = this.resolvePath(fromPath);
@@ -130,8 +146,17 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-move-file": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
+        const parts = action.value.split(advancedCommandValueSeparator);
+
+        // poor input; no op!
+        // but at least log if verbose
+        if (parts.length !== 2) {
+          if (this.verbose) console.warn(`Invalid value for file-explorer-move-file: ${action.value}`);
+          break;
+        }
+
+        const fromPath = parts[0];
+        const toPath = parts[1];
 
         // Resolve both paths properly
         const fullFromPath = this.resolvePath(fromPath);
@@ -153,8 +178,17 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-copy-file": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
+        const parts = action.value.split(advancedCommandValueSeparator);
+
+        // poor input; no op!
+        // but at least log if verbose
+        if (parts.length !== 2) {
+          if (this.verbose) console.warn(`Invalid value for file-explorer-copy-file: ${action.value}`);
+          break;
+        }
+
+        const fromPath = parts[0];
+        const toPath = parts[1];
 
         // Resolve both paths properly
         const fullFromPath = this.resolvePath(fromPath);
@@ -211,8 +245,17 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-rename-folder": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
+        const parts = action.value.split(advancedCommandValueSeparator);
+
+        // poor input; no op!
+        // but at least log if verbose
+        if (parts.length !== 2) {
+          if (this.verbose) console.warn(`Invalid value for file-explorer-rename-folder: ${action.value}`);
+          break;
+        }
+
+        const fromPath = parts[0];
+        const toPath = parts[1];
 
         // Resolve both paths properly
         const fullFromPath = this.resolvePath(fromPath);
@@ -234,8 +277,17 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-move-folder": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
+        const parts = action.value.split(advancedCommandValueSeparator);
+
+        // poor input; no op!
+        // but at least log if verbose
+        if (parts.length !== 2) {
+          if (this.verbose) console.warn(`Invalid value for file-explorer-move-folder: ${action.value}`);
+          break;
+        }
+
+        const fromPath = parts[0];
+        const toPath = parts[1];
 
         // Resolve both paths properly
         const fullFromPath = this.resolvePath(fromPath);
@@ -257,8 +309,17 @@ export class VirtualFileExplorer {
       }
 
       case "file-explorer-copy-folder": {
-        const [fromPath, toPath] = action.value.split(';')
-          .map(part => part.replace(/^(from:|to:)/, ''));
+        const parts = action.value.split(advancedCommandValueSeparator);
+
+        // poor input; no op!
+        // but at least log if verbose
+        if (parts.length !== 2) {
+          if (this.verbose) console.warn(`Invalid value for file-explorer-copy-folder: ${action.value}`);
+          break;
+        }
+
+        const fromPath = parts[0];
+        const toPath = parts[1];
 
         // Resolve both paths properly
         const fullFromPath = this.resolvePath(fromPath);
