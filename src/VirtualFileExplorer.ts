@@ -5,7 +5,8 @@ import {
   FileLeaf,
   DirectoryNode,
   FileItem,
-  advancedCommandValueSeparator
+  advancedCommandValueSeparator,
+  IFileEntry
 } from "@fullstackcraftllc/codevideo-types";
 
 /**
@@ -479,6 +480,26 @@ export class VirtualFileExplorer {
     return fileObjects;
   }
 
+  /**
+   * Gets the full file paths and their contents in the current file structure
+   * @returns Array of file paths and their contents
+   */
+  getFullFilePathsAndContents(): Array<IFileEntry> {
+    const fileEntries: Array<IFileEntry> = [];
+    const traverse = (structure: IFileStructure, path: string) => {
+      for (const [name, item] of Object.entries(structure)) {
+        if (item.type === 'directory') {
+          traverse((item as DirectoryNode).children!, `${path}/${name}`);
+        } else {
+          fileEntries.push({ path: `${path}/${name}`, content: (item as FileLeaf).content });
+        }
+      }
+    };
+
+    traverse(this.currentFileStructure, '');
+
+    return fileEntries;
+  }
 
   /**
    * Gets the current file structure
