@@ -6,17 +6,40 @@ import {
   DirectoryNode,
   FileItem,
   advancedCommandValueSeparator,
-  IFileEntry
+  IFileEntry,
+  IFileExplorerSnapshot
 } from "@fullstackcraftllc/codevideo-types";
 
 /**
  * Represents a virtual file explorer that can be used to simulate file system operations in the CodeVideo ecosystem.
+ * Supports file and folder creation, moving, renaming, and deletion.
+ * Even tracks state of new file, new folder, and rename input texts.
  */
 export class VirtualFileExplorer {
   private presentWorkingDirectory = '';
   private currentFileStructure: IFileStructure = {};
   private actionsApplied: FileExplorerAction[] = [];
   private openFiles: Set<string> = new Set();
+
+  // context menus
+  private isFileExplorerContextMenuOpen = false;
+  private isFileContextMenuOpen = false;
+  private isFolderContextMenuOpen = false;
+
+  // new file or folder stuff
+  private isNewFileInputVisible = false;
+  private isNewFolderInputVisible = false;
+  private newFileInputValue = "";
+  private newFolderInputValue = "";
+
+  // rename file or folder stuff
+  private isRenameFileInputVisible = false;
+  private isRenameFolderInputVisible = false;
+  private originalFileBeingRenamed = "";
+  private originalFolderBeingRenamed = "";
+  private renameFileInputValue = "";
+  private renameFolderInputValue = "";
+
   private verbose = false;
 
   constructor(actions?: FileExplorerAction[], verbose?: boolean) {
@@ -44,7 +67,7 @@ export class VirtualFileExplorer {
 
     // in this switch, let the FileExplorerActions in codevideo-types guide you
     switch (action.name) {
-      // cross domain actions (from terminal mainly)
+      // cross domain actions (from terminal)
       case "file-explorer-set-present-working-directory": {
         this.setPresentWorkingDirectory(action.value);
         break;
@@ -81,6 +104,101 @@ export class VirtualFileExplorer {
         }
 
         parent[name].content = content;
+        break;
+      }
+
+      // cross domain (from mouse)
+      case "file-explorer-show-context-menu": {
+        this.isFileExplorerContextMenuOpen = true;
+        break;
+      }
+
+      case "file-explorer-hide-context-menu": {
+        this.isFileExplorerContextMenuOpen = false;
+        break;
+      }
+
+      case "file-explorer-show-file-context-menu": {
+        this.isFileContextMenuOpen = true;
+        break;
+      }
+
+      case "file-explorer-hide-file-context-menu": {
+        this.isFileContextMenuOpen = false;
+        break;
+      }
+
+      case "file-explorer-show-folder-context-menu": {
+        this.isFolderContextMenuOpen = true;
+        break;
+      }
+
+      case "file-explorer-hide-folder-context-menu": {
+        this.isFolderContextMenuOpen = false;
+        break;
+      }
+
+      case "file-explorer-show-new-file-input": {
+        this.isNewFileInputVisible = true;
+        break;
+      }
+
+      case "file-explorer-hide-new-file-input": {
+        this.isNewFileInputVisible = false;
+        break;
+      }
+
+      case "file-explorer-show-new-folder-input": {
+        this.isNewFolderInputVisible = true;
+        break;
+      }
+
+      case "file-explorer-hide-new-folder-input": {
+        this.isNewFolderInputVisible = false;
+        break;
+      }
+
+      case "file-explorer-rename-file-draft-state": {
+        this.originalFileBeingRenamed = action.value;
+        break;
+      }
+
+      case "file-explorer-rename-folder-draft-state": {
+        this.originalFolderBeingRenamed = action.value;
+        break;
+      }
+
+      case "file-explorer-type-rename-file-input": {
+        this.renameFileInputValue += action.value
+        break;
+      }
+
+      case "file-explorer-type-rename-folder-input": {
+        this.renameFolderInputValue += action.value
+        break;
+      }
+
+      // we even have new file or folder input tracking functionality!
+      case "file-explorer-type-new-file-input": {
+        this.newFileInputValue += action.value
+        break;
+      }
+
+      case "file-explorer-type-new-folder-input": {
+        this.newFolderInputValue += action.value
+        break;
+      }
+
+      // only on enter do we clear the inputs
+      case "file-explorer-enter-new-file-input": {
+        this.isNewFileInputVisible = false;
+        this.newFileInputValue = "";
+        break;
+      }
+
+      case "file-explorer-enter-new-folder-input": {
+        this.isNewFolderInputVisible = false;
+        this.newFolderInputValue = "";
         break;
       }
 
@@ -360,6 +478,29 @@ export class VirtualFileExplorer {
 
     if (this.verbose) {
       console.log(`Action: ${action.name}`);
+    }
+  }
+
+  /**
+   * Gets the current file explorer snapshot
+   * @returns The current file explorer snapshot
+   */
+  getCurrentFileExplorerSnapshot(): IFileExplorerSnapshot {
+    return {
+      fileStructure: this.currentFileStructure,
+      isFileExplorerContextMenuOpen: this.isFileExplorerContextMenuOpen,
+      isFileContextMenuOpen: this.isFileContextMenuOpen,
+      isFolderContextMenuOpen: this.isFolderContextMenuOpen,
+      isNewFileInputVisible: this.isNewFileInputVisible,
+      isNewFolderInputVisible: this.isNewFolderInputVisible,
+      newFileInputValue: this.newFileInputValue,
+      newFolderInputValue: this.newFolderInputValue,
+      isRenameFileInputVisible: this.isRenameFileInputVisible,
+      isRenameFolderInputVisible: this.isRenameFolderInputVisible,
+      originalFileBeingRenamed: this.originalFileBeingRenamed,
+      originalFolderBeingRenamed: this.originalFolderBeingRenamed,
+      renameFileInputValue: this.renameFileInputValue,
+      renameFolderInputValue: this.renameFolderInputValue,
     }
   }
 
