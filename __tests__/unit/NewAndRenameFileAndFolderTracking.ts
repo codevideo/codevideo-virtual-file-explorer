@@ -54,7 +54,6 @@ describe("VirtualFileExplorer file and folder creation", () => {
       explorer.applyAction({ name: "file-explorer-enter-new-file-input", value: "" });
       snapshot = explorer.getCurrentFileExplorerSnapshot();
       expect(snapshot.isNewFileInputVisible).toBe(false);
-      expect(snapshot.newFileInputValue).toBe("");
     });
 
     it("should show and track new folder input then clear on enter", () => {
@@ -69,11 +68,10 @@ describe("VirtualFileExplorer file and folder creation", () => {
       snapshot = explorer.getCurrentFileExplorerSnapshot();
       expect(snapshot.newFolderInputValue).toBe("MyFolder");
 
-      // On enter, the input should be cleared and hidden
+      // On enter, the input should be hidden
       explorer.applyAction({ name: "file-explorer-enter-new-folder-input", value: "" });
       snapshot = explorer.getCurrentFileExplorerSnapshot();
       expect(snapshot.isNewFolderInputVisible).toBe(false);
-      expect(snapshot.newFolderInputValue).toBe("");
     });
   });
 
@@ -84,11 +82,19 @@ describe("VirtualFileExplorer file and folder creation", () => {
       explorer.applyAction({ name: "file-explorer-rename-file-draft-state", value: "oldFile.ts" });
       let snapshot = explorer.getCurrentFileExplorerSnapshot();
       expect(snapshot.originalFileBeingRenamed).toBe("oldFile.ts");
+      expect(snapshot.renameFileInputValue).toBe("oldFile");
+      expect(snapshot.isRenameFileInputVisible).toBe(true);
 
-      // Type into the rename file input
+      // Type into the rename file input (since in a standard ide, the entire name is selected by default)
       explorer.applyAction({ name: "file-explorer-type-rename-file-input", value: "new" });
       snapshot = explorer.getCurrentFileExplorerSnapshot();
-      expect(snapshot.renameFileInputValue).toBe("new");
+      expect(snapshot.renameFileInputValue).toBe("new.ts");
+
+      // press enter to submit the rename
+      explorer.applyAction({ name: "file-explorer-enter-rename-file-input", value: "1" });
+      snapshot = explorer.getCurrentFileExplorerSnapshot();
+      expect(snapshot.isRenameFileInputVisible).toBe(false);
+      expect(snapshot.isRenameFolderInputVisible).toBe(false);
 
       // Ensure rename folder properties remain unchanged
       expect(snapshot.originalFolderBeingRenamed).toBe("");
@@ -101,11 +107,21 @@ describe("VirtualFileExplorer file and folder creation", () => {
       explorer.applyAction({ name: "file-explorer-rename-folder-draft-state", value: "oldFolder" });
       let snapshot = explorer.getCurrentFileExplorerSnapshot();
       expect(snapshot.originalFolderBeingRenamed).toBe("oldFolder");
+      expect(snapshot.renameFolderInputValue).toBe("oldFolder");
+      expect(snapshot.isRenameFolderInputVisible).toBe(true);
 
-      // Type into the rename folder input
+      // Type into the rename folder input (since in a standard ide, the entire name is selected by default)
       explorer.applyAction({ name: "file-explorer-type-rename-folder-input", value: "new" });
       snapshot = explorer.getCurrentFileExplorerSnapshot();
       expect(snapshot.renameFolderInputValue).toBe("new");
+
+      // press enter to submit the rename
+      explorer.applyAction({ name: "file-explorer-enter-rename-folder-input", value: "1" });
+      snapshot = explorer.getCurrentFileExplorerSnapshot();
+      expect(snapshot.isRenameFolderInputVisible).toBe(false);
+      expect(snapshot.isRenameFileInputVisible).toBe(false);
+      expect(snapshot.originalFolderBeingRenamed).toBe("");
+
 
       // Ensure rename file properties remain unchanged
       expect(snapshot.originalFileBeingRenamed).toBe("");
@@ -127,7 +143,31 @@ describe("VirtualFileExplorer file and folder creation", () => {
       expect(snapshot.isNewFileInputVisible).toBe(true);
       expect(snapshot.newFileInputValue).toBe("temp");
       expect(snapshot.originalFileBeingRenamed).toBe("oldName.ts");
-      expect(snapshot.renameFileInputValue).toBe("new");
+      expect(snapshot.renameFileInputValue).toBe("new.ts");
+    });
+  });
+
+  describe("clearing inputs", () => {
+    it("should clear new file input when the file-explorer-clear-new-file-input action is fired", () => {
+      const explorer = new VirtualFileExplorer();
+      explorer.applyAction({ name: "file-explorer-type-new-file-input", value: "myfile.js" });
+      let snapshot = explorer.getCurrentFileExplorerSnapshot();
+      expect(snapshot.newFileInputValue).toBe("myfile.js");
+
+      explorer.applyAction({ name: "file-explorer-clear-new-file-input", value: "" });
+      snapshot = explorer.getCurrentFileExplorerSnapshot();
+      expect(snapshot.newFileInputValue).toBe("");
+    });
+
+    it("should clear new folder input when the file-explorer-clear-new-folder-input action is fired", () => {
+      const explorer = new VirtualFileExplorer();
+      explorer.applyAction({ name: "file-explorer-type-new-folder-input", value: "MyDir" });
+      let snapshot = explorer.getCurrentFileExplorerSnapshot();
+      expect(snapshot.newFolderInputValue).toBe("MyDir");
+
+      explorer.applyAction({ name: "file-explorer-clear-new-folder-input", value: "" });
+      snapshot = explorer.getCurrentFileExplorerSnapshot();
+      expect(snapshot.newFolderInputValue).toBe("");
     });
   });
 });

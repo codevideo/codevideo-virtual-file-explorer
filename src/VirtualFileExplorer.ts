@@ -40,6 +40,9 @@ export class VirtualFileExplorer {
   private renameFileInputValue = "";
   private renameFolderInputValue = "";
 
+  // not exposed to clients, but maybe could be
+  private currentFileRenameExtension = "";
+
   private verbose = false;
 
   constructor(actions?: FileExplorerAction[], verbose?: boolean) {
@@ -160,21 +163,43 @@ export class VirtualFileExplorer {
 
       case "file-explorer-rename-file-draft-state": {
         this.originalFileBeingRenamed = action.value;
+        this.isRenameFileInputVisible = true;
+        // in IDEs like VSCode, the rename input is just the file name
+        this.renameFileInputValue = this.getFileNameWithoutExtension(action.value);
+        // we save the reference to the file extension so we can append it later
+        this.currentFileRenameExtension = this.getFileExtension(action.value);
         break;
       }
 
       case "file-explorer-rename-folder-draft-state": {
         this.originalFolderBeingRenamed = action.value;
+        this.isRenameFolderInputVisible = true;
+        this.renameFolderInputValue = action.value;
         break;
       }
 
       case "file-explorer-type-rename-file-input": {
-        this.renameFileInputValue += action.value
+        this.renameFileInputValue = action.value + "." + this.currentFileRenameExtension;
+        break;
+      }
+
+      case "file-explorer-enter-rename-file-input": {
+        this.isRenameFileInputVisible = false;
+        this.renameFileInputValue = "";
+        this.currentFileRenameExtension = "";
+        this.originalFileBeingRenamed = "";
         break;
       }
 
       case "file-explorer-type-rename-folder-input": {
-        this.renameFolderInputValue += action.value
+        this.renameFolderInputValue = action.value
+        break;
+      }
+
+      case "file-explorer-enter-rename-folder-input": {
+        this.isRenameFolderInputVisible = false;
+        this.renameFolderInputValue = "";
+        this.originalFolderBeingRenamed = "";
         break;
       }
 
@@ -184,21 +209,28 @@ export class VirtualFileExplorer {
         break;
       }
 
+      case "file-explorer-clear-new-file-input": {
+        this.newFileInputValue = ""
+        break;
+      }
+
       case "file-explorer-type-new-folder-input": {
         this.newFolderInputValue += action.value
         break;
       }
 
-      // only on enter do we clear the inputs
+      case "file-explorer-clear-new-folder-input": {
+        this.newFolderInputValue = ""
+        break;
+      }
+
       case "file-explorer-enter-new-file-input": {
         this.isNewFileInputVisible = false;
-        this.newFileInputValue = "";
         break;
       }
 
       case "file-explorer-enter-new-folder-input": {
         this.isNewFolderInputVisible = false;
-        this.newFolderInputValue = "";
         break;
       }
 
@@ -830,5 +862,18 @@ export class VirtualFileExplorer {
 
   private closeFile(fileName: string): void {
     this.openFiles.delete(fileName);
+  }
+
+  private getFileNameWithoutExtension(filePath: string): string {
+    const parts = filePath.split('/');
+    if (parts.length === 0) {
+      return "";
+    }
+    const finalPart = parts[parts.length - 1];
+    const lastDotIndex = finalPart.lastIndexOf('.');
+    if (lastDotIndex === -1) {
+      return finalPart;
+    }
+    return finalPart.substring(0, lastDotIndex);
   }
 }
