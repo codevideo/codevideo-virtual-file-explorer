@@ -231,6 +231,9 @@ export class VirtualFileExplorer {
 
       case "file-explorer-clear-new-file-input": {
         this.newFileInputValue = ""
+
+        // also clear the parent path
+        this.newFileParentPath = "";
         break;
       }
 
@@ -241,6 +244,9 @@ export class VirtualFileExplorer {
 
       case "file-explorer-clear-new-folder-input": {
         this.newFolderInputValue = ""
+
+        // also clear the parent path
+        this.newFolderParentPath = "";
         break;
       }
 
