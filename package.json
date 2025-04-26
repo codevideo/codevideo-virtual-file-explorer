@@ -1,6 +1,6 @@
 {
   "name": "@fullstackcraftllc/codevideo-virtual-file-explorer",
-  "version": "1.0.22",
+  "version": "1.0.24",
   "description": "TypeScript class that simulates a file explorer in an IDE.",
   "type": "module",
   "main": "dist/index.js",
@@ -37,6 +37,6 @@
     "typescript": "^5.4.2"
   },
   "peerDependencies": {
-    "@fullstackcraftllc/codevideo-types": "^2.1.5"
+    "@fullstackcraftllc/codevideo-types": "^2.1.12"
   }
 }

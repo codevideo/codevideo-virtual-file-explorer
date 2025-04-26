@@ -31,6 +31,8 @@ export class VirtualFileExplorer {
   private isNewFolderInputVisible = false;
   private newFileInputValue = "";
   private newFolderInputValue = "";
+  private newFileParentPath = "";
+  private newFolderParentPath = "";
 
   // rename file or folder stuff
   private isRenameFileInputVisible = false;
@@ -40,10 +42,10 @@ export class VirtualFileExplorer {
   private renameFileInputValue = "";
   private renameFolderInputValue = "";
 
+  private verbose = false;
+
   // not exposed to clients, but maybe could be
   private currentFileRenameExtension = "";
-
-  private verbose = false;
 
   constructor(actions?: FileExplorerAction[], verbose?: boolean) {
     this.verbose = verbose || false;
@@ -123,6 +125,8 @@ export class VirtualFileExplorer {
 
       case "file-explorer-show-file-context-menu": {
         this.isFileContextMenuOpen = true;
+        const parentDirectory = this.getParentDirectory(action.value);
+        this.newFileParentPath = parentDirectory.name;
         break;
       }
 
@@ -133,6 +137,8 @@ export class VirtualFileExplorer {
 
       case "file-explorer-show-folder-context-menu": {
         this.isFolderContextMenuOpen = true;
+        const parentDirectory = this.getParentDirectory(action.value);
+        this.newFolderParentPath = parentDirectory.name;
         break;
       }
 
@@ -143,6 +149,13 @@ export class VirtualFileExplorer {
 
       case "file-explorer-show-new-file-input": {
         this.isNewFileInputVisible = true;
+
+        // If a folder path is provided, use it
+        // essentially "1" means we are in the root directory, anything non "1" is the full path of where we are
+        if (action.value && action.value !== "1") {
+          this.newFileParentPath = action.value;
+        }
+
         break;
       }
 
@@ -153,6 +166,13 @@ export class VirtualFileExplorer {
 
       case "file-explorer-show-new-folder-input": {
         this.isNewFolderInputVisible = true;
+
+        // If a folder path is provided, use it
+        // essentially "1" means we are in the root directory, anything non "1" is the full path of where we are
+        if (action.value && action.value !== "1") {
+          this.newFolderParentPath = action.value;
+        }
+
         break;
       }
 
@@ -533,6 +553,8 @@ export class VirtualFileExplorer {
       originalFolderBeingRenamed: this.originalFolderBeingRenamed,
       renameFileInputValue: this.renameFileInputValue,
       renameFolderInputValue: this.renameFolderInputValue,
+      newFileParentPath: this.newFileParentPath,
+      newFolderParentPath: this.newFolderParentPath,
     }
   }
 
