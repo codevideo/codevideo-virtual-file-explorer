@@ -17,7 +17,7 @@ import {
  */
 export class VirtualFileExplorer {
   private presentWorkingDirectory = '';
-  private currentFileStructure: IFileStructure = {};
+  private fileStructure: IFileStructure = {};
   private actionsApplied: FileExplorerAction[] = [];
   private openFiles: Set<string> = new Set();
 
@@ -52,6 +52,30 @@ export class VirtualFileExplorer {
     if (actions) {
       this.applyActions(actions);
     }
+  }
+
+  /**
+   * Applies a snapshot to the virtual file explorer
+   * Useful for restoring the state of the file explorer at a specific point in time
+   * @param snapshot 
+   */
+  applySnapshot(snapshot: IFileExplorerSnapshot) {
+    this.fileStructure = snapshot.fileStructure
+    this.isFileExplorerContextMenuOpen = snapshot.isFileExplorerContextMenuOpen
+    this.isFileContextMenuOpen = snapshot.isFileContextMenuOpen
+    this.isFolderContextMenuOpen = snapshot.isFolderContextMenuOpen
+    this.isNewFileInputVisible = snapshot.isNewFileInputVisible
+    this.isNewFolderInputVisible = snapshot.isNewFolderInputVisible
+    this.newFileInputValue = snapshot.newFileInputValue
+    this.newFolderInputValue = snapshot.newFolderInputValue
+    this.isRenameFileInputVisible = snapshot.isRenameFileInputVisible
+    this.isRenameFolderInputVisible = snapshot.isRenameFolderInputVisible
+    this.originalFileBeingRenamed = snapshot.originalFileBeingRenamed
+    this.originalFolderBeingRenamed = snapshot.originalFolderBeingRenamed
+    this.renameFileInputValue = snapshot.renameFileInputValue
+    this.renameFolderInputValue = snapshot.renameFolderInputValue
+    this.newFileParentPath = snapshot.newFileParentPath
+    this.newFolderParentPath = snapshot.newFolderParentPath
   }
 
   /**
@@ -547,7 +571,7 @@ export class VirtualFileExplorer {
    */
   getCurrentFileExplorerSnapshot(): IFileExplorerSnapshot {
     return {
-      fileStructure: this.currentFileStructure,
+      fileStructure: this.fileStructure,
       isFileExplorerContextMenuOpen: this.isFileExplorerContextMenuOpen,
       isFileContextMenuOpen: this.isFileContextMenuOpen,
       isFolderContextMenuOpen: this.isFolderContextMenuOpen,
@@ -580,7 +604,7 @@ export class VirtualFileExplorer {
    * @returns String representation of the current file tree
    */
   getCurrentFileTree(showEvenIfCollapsed: boolean = true): string {
-    return this.buildTreeString(this.currentFileStructure, '', showEvenIfCollapsed);
+    return this.buildTreeString(this.fileStructure, '', showEvenIfCollapsed);
   }
 
   /**
@@ -599,7 +623,7 @@ export class VirtualFileExplorer {
       }
     };
 
-    traverse(this.currentFileStructure, '');
+    traverse(this.fileStructure, '');
 
     return files.sort();
   }
@@ -610,7 +634,7 @@ export class VirtualFileExplorer {
    */
   getLsString(): string {
     // Start from the root of the virtual file structure
-    let target: IFileStructure = this.currentFileStructure;
+    let target: IFileStructure = this.fileStructure;
 
     // Remove '~' if it is present
     let path = this.presentWorkingDirectory;
@@ -625,7 +649,7 @@ export class VirtualFileExplorer {
       console.log('getLsString - Current path:', this.presentWorkingDirectory);
       console.log('getLsString - Processed path:', path);
       console.log('getLsString - Path components:', components);
-      console.log('getLsString - Initial structure:', JSON.stringify(this.currentFileStructure, null, 2));
+      console.log('getLsString - Initial structure:', JSON.stringify(this.fileStructure, null, 2));
     }
 
     // Traverse through the path components to find the target directory
@@ -678,7 +702,7 @@ export class VirtualFileExplorer {
       }
     };
 
-    traverse(this.currentFileStructure, '');
+    traverse(this.fileStructure, '');
 
     return fileObjects;
   }
@@ -699,7 +723,7 @@ export class VirtualFileExplorer {
       }
     };
 
-    traverse(this.currentFileStructure, '');
+    traverse(this.fileStructure, '');
 
     return fileEntries;
   }
@@ -709,7 +733,7 @@ export class VirtualFileExplorer {
    * @returns The current file structure
    */
   getCurrentFileStructure(): IFileStructure {
-    return this.currentFileStructure;
+    return this.fileStructure;
   }
 
   /**
@@ -815,7 +839,7 @@ export class VirtualFileExplorer {
   private getParentDirectory(path: string): { parent: IFileStructure; name: string } {
     const components = this.getPathComponents(path);
     const fileName = components.pop()!;
-    let current = this.currentFileStructure;
+    let current = this.fileStructure;
 
     for (const component of components) {
       if (!current[component]) {
